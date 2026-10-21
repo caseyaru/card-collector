@@ -1,0 +1,53 @@
+{
+  "collections": [
+    {
+      "id": "col_basic",
+      "name": "Базовые"
+    },
+    {
+      "id": "col_rare",
+      "name": "Редкие"
+    },
+    {
+      "id": "col_legendary",
+      "name": "Легендарные"
+    }
+  ],
+  "characters": [
+    {
+      "id": "char_ember",
+      "name": "Эмбера"
+    },
+    {
+      "id": "char_frost",
+      "name": "Крион"
+    },
+    {
+      "id": "char_moss",
+      "name": "Мшистый дух"
+    }
+  ],
+  "cards": [
+    {
+      "id": "card_dragon",
+      "name": "Пламенный дракон",
+      "imageUrl": "https://picsum.photos/seed/dragon/400/560",
+      "collectionIds": ["col_rare"],
+      "characterIds": ["char_ember"]
+    },
+    {
+      "id": "card_golem",
+      "name": "Ледяной голем",
+      "imageUrl": "https://picsum.photos/seed/golem/400/560",
+      "collectionIds": ["col_basic", "col_rare"],
+      "characterIds": ["char_frost"]
+    },
+    {
+      "id": "card_warden",
+      "name": "Лесной страж",
+      "imageUrl": "https://picsum.photos/seed/warden/400/560",
+      "collectionIds": ["col_basic", "col_legendary"],
+      "characterIds": ["char_moss"]
+    }
+  ]
+}
