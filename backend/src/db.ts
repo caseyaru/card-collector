@@ -7,7 +7,7 @@ import type { Database } from "./types.js";
 const DB_PATH = process.env.DB_PATH ?? path.join(process.cwd(), "data", "db.json");
 
 function emptyDb(): Database {
-  return { collections: [], characters: [], cards: [] };
+  return { collections: [], characters: [], sets: [], cards: [] };
 }
 
 /** Читает базу из JSON-файла. Отсутствующий файл трактуется как пустая база. */
@@ -18,9 +18,11 @@ export async function readDb(): Promise<Database> {
     return {
       collections: parsed.collections ?? [],
       characters: parsed.characters ?? [],
-      // Карточки из более старых версий могут не иметь characterIds.
+      sets: parsed.sets ?? [],
+      // Карточки из более старых версий могут не иметь characterIds и rating.
       cards: (parsed.cards ?? []).map((card) => ({
         ...card,
+        rating: card.rating ?? 0,
         collectionIds: card.collectionIds ?? [],
         characterIds: card.characterIds ?? [],
       })),

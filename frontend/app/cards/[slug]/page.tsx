@@ -7,9 +7,11 @@ import { use, useCallback, useEffect, useState, type FormEvent } from "react";
 import type { Card } from "@/entities/card";
 import type { Character } from "@/entities/character";
 import type { Collection } from "@/entities/collection";
+import type { CardSet } from "@/entities/set";
 import { CharacterPicker } from "@/features/card-characters";
+import { CardSetPicker } from "@/features/card-set";
 import { ApiError, fetchJson } from "@/shared/lib/fetcher";
-import { Button, Container, TagMultiSelect, TextField } from "@/shared/ui";
+import { Button, Container, StarRating, TagMultiSelect, TextField } from "@/shared/ui";
 
 /** Страница карточки: /cards/{название}. Слева изображение, справа информация и действия. */
 export default function CardDetailPage({
@@ -22,6 +24,7 @@ export default function CardDetailPage({
   const [card, setCard] = useState<Card | null>(null);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
+  const [sets, setSets] = useState<CardSet[]>([]);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,9 +32,15 @@ export default function CardDetailPage({
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  // Ссылка, подтянутая в контейнер-превью (обновляется при выходе поля из фокуса).
+  const [imagePreview, setImagePreview] = useState("");
+  const [previewFailed, setPreviewFailed] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [characterIds, setCharacterIds] = useState<string[]>([]);
   const [characterNames, setCharacterNames] = useState<string[]>([]);
+  const [setId, setSetId] = useState("");
+  const [pendingSetName, setPendingSetName] = useState("");
+  const [rating, setRating] = useState(0);
   const [formError, setFormError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -41,14 +50,16 @@ export default function CardDetailPage({
 
   const load = useCallback(async () => {
     try {
-      const [cardData, collectionsData, charactersData] = await Promise.all([
+      const [cardData, collectionsData, charactersData, setsData] = await Promise.all([
         fetchJson<Card>(`/api/cards/${encodeURIComponent(cardName)}`),
         fetchJson<Collection[]>("/api/collections"),
         fetchJson<Character[]>("/api/characters"),
+        fetchJson<CardSet[]>("/api/sets"),
       ]);
       setCard(cardData);
       setCollections(collectionsData);
       setCharacters(charactersData);
+      setSets(setsData);
       setNotFound(false);
       setError(null);
     } catch (err) {
@@ -69,6 +80,15 @@ export default function CardDetailPage({
     }
   }, []);
 
+  /** Перечитывает справочник сетов (после сохранения мог появиться новый). */
+  const refreshSets = useCallback(async () => {
+    try {
+      setSets(await fetchJson<CardSet[]>("/api/sets"));
+    } catch {
+      // Не критично: названия подтянутся при следующей загрузке страницы.
+    }
+  }, []);
+
   useEffect(() => {
     void load();
   }, [load]);
@@ -80,13 +100,28 @@ export default function CardDetailPage({
         .filter((character): character is Character => Boolean(character))
     : [];
 
+  /** Сет карточки, если задан. */
+  const cardSet = card?.setId
+    ? (sets.find((set) => set.id === card.setId) ?? null)
+    : null;
+
+  /** Ссылка для контейнера-изображения: в редактировании — превью из поля. */
+  const previewSource = editing ? imagePreview : (card?.imageUrl ?? "");
+  // next/image принимает только абсолютный http(s)-адрес; остальное — как «нет картинки».
+  const shownImageUrl = /^https?:\/\//i.test(previewSource) ? previewSource : "";
+
   function startEdit() {
     if (!card) return;
     setName(card.name);
     setImageUrl(card.imageUrl ?? "");
+    setImagePreview(card.imageUrl ?? "");
+    setPreviewFailed(false);
     setSelectedIds(card.collectionIds);
     setCharacterIds(card.characterIds);
     setCharacterNames([]);
+    setSetId(card.setId ?? "");
+    setPendingSetName("");
+    setRating(card.rating ?? 0);
     setFormError(null);
     setEditing(true);
   }
@@ -94,6 +129,16 @@ export default function CardDetailPage({
   function cancelEdit() {
     setEditing(false);
     setFormError(null);
+  }
+
+  /**
+   * Подтягивает ссылку из поля в контейнер-превью. Вызывается при выходе
+   * поля из фокуса — до этого момента набор текста превью не трогает.
+   */
+  function commitImagePreview() {
+    const url = imageUrl.trim();
+    setImagePreview(url);
+    setPreviewFailed(false);
   }
 
   async function handleSave(event: FormEvent<HTMLFormElement>) {
@@ -109,18 +154,25 @@ export default function CardDetailPage({
           body: JSON.stringify({
             name,
             imageUrl,
+            rating,
             collectionIds: selectedIds,
             characterIds,
             characterNames,
+            // Сет необязателен: выбранный из справочника, новое название или пусто
+            // (пустая строка явно означает «убрать сет»).
+            setId,
+            setName: setId ? undefined : pendingSetName,
           }),
         },
       );
       setCard(updated);
       setEditing(false);
       setCharacterNames([]);
-      // Новые персонажи создаются на сервере, поэтому обновляем справочник,
-      // иначе их имена не отобразятся до перезагрузки страницы.
+      setPendingSetName("");
+      // Новые персонажи и сеты создаются на сервере, поэтому обновляем
+      // справочники, иначе их названия не отобразятся до перезагрузки страницы.
       void refreshCharacters();
+      void refreshSets();
       // Название изменилось — страница должна перейти на новый адрес.
       if (updated.name !== cardName) {
         router.replace(`/cards/${encodeURIComponent(updated.name)}`);
@@ -190,19 +242,25 @@ export default function CardDetailPage({
 
       {card !== null ? (
         <div className="grid gap-8 md:grid-cols-[minmax(0,320px)_1fr]">
-          {/* Слева: изображение. */}
+          {/* Слева: изображение. В режиме редактирования показывает превью
+              ссылки, подтянутой из поля (обновляется при потере фокуса). */}
           <div className="relative aspect-[5/7] w-full overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800">
-            {card.imageUrl ? (
+            {shownImageUrl && !previewFailed ? (
               <Image
-                src={card.imageUrl}
+                src={shownImageUrl}
                 alt={card.name}
                 fill
                 sizes="(max-width: 768px) 100vw, 320px"
                 className="object-cover"
+                onError={() => {
+                  if (editing) setPreviewFailed(true);
+                }}
               />
             ) : (
               <div className="flex h-full items-center justify-center px-4 text-center text-sm text-zinc-400 dark:text-zinc-500">
-                Нет изображения
+                {editing && imagePreview
+                  ? "Не удалось загрузить изображение"
+                  : "Нет изображения"}
               </div>
             )}
           </div>
@@ -237,6 +295,7 @@ export default function CardDetailPage({
                 placeholder="https://example.com/card.png"
                 value={imageUrl}
                 onChange={(event) => setImageUrl(event.target.value)}
+                onBlur={commitImagePreview}
                 hint="Необязательно. Если ссылки нет, карточка покажет заглушку."
               />
 
@@ -255,6 +314,16 @@ export default function CardDetailPage({
                 pendingNames={characterNames}
                 onPendingNamesChange={setCharacterNames}
               />
+
+              <CardSetPicker
+                options={sets}
+                selectedId={setId}
+                onSelectedIdChange={setSetId}
+                pendingName={pendingSetName}
+                onPendingNameChange={setPendingSetName}
+              />
+
+              <StarRating value={rating} onChange={setRating} editable />
 
               {formError ? (
                 <p role="alert" className="text-sm text-red-600 dark:text-red-400">
@@ -332,6 +401,22 @@ export default function CardDetailPage({
                   </p>
                 )}
               </div>
+
+              {/* Сет необязателен: если не задан — блок не показываем. */}
+              {cardSet ? (
+                <div className="flex flex-col gap-2">
+                  <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    Сет
+                  </span>
+                  <ul className="flex flex-wrap gap-2">
+                    <li className="inline-flex rounded-full bg-zinc-100 px-3 py-1 text-sm text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+                      {cardSet.name}
+                    </li>
+                  </ul>
+                </div>
+              ) : null}
+
+              <StarRating value={card.rating} label="Рейтинг" />
 
               <div className="mt-2 flex flex-wrap gap-2">
                 <Button variant="secondary" size="sm" onClick={startEdit}>

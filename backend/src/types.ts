@@ -3,6 +3,10 @@ export interface Card {
   id: string;
   name: string;
   imageUrl?: string;
+  /** Оценка карточки от 0 до 5 (0 — пользователь не оценивал). */
+  rating: number;
+  /** Идентификатор сета (необязательно; пусто означает «сета нет»). */
+  setId?: string;
   /** Идентификаторы коллекций, в которые входит карточка. */
   collectionIds: string[];
   /** Идентификаторы персонажей карточки. */
@@ -21,9 +25,16 @@ export interface Character {
   name: string;
 }
 
+/** Сет (сущность из справочника; у карточки может быть не более одного). */
+export interface CardSet {
+  id: string;
+  name: string;
+}
+
 /** Структура файла хранилища (backend/data/db.json). */
 export interface Database {
   collections: Collection[];
   characters: Character[];
+  sets: CardSet[];
   cards: Card[];
 }

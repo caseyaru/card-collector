@@ -5,12 +5,14 @@ import { use, useCallback, useEffect, useMemo, useState } from "react";
 import { CardTile, type Card } from "@/entities/card";
 import type { Character } from "@/entities/character";
 import type { CollectionWithCards } from "@/entities/collection";
+import type { CardSet } from "@/entities/set";
 import { CharacterFilter } from "@/features/filter-cards-by-character";
+import { CardSetFilter } from "@/features/filter-cards-by-set";
 import { fetchJson } from "@/shared/lib/fetcher";
 import { pluralizeCards } from "@/shared/lib/pluralize";
 import { Button, Container, PageHeader } from "@/shared/ui";
 
-/** Карточки одной коллекции: /collection/{название} + фильтр по персонажам. */
+/** Карточки одной коллекции: /collection/{название} + фильтры по персонажам и сетам. */
 export default function CollectionDetailPage({
   params,
 }: PageProps<"/collection/[slug]">) {
@@ -19,20 +21,24 @@ export default function CollectionDetailPage({
 
   const [collection, setCollection] = useState<CollectionWithCards | null>(null);
   const [characters, setCharacters] = useState<Character[]>([]);
+  const [sets, setSets] = useState<CardSet[]>([]);
   const [characterFilter, setCharacterFilter] = useState<string[]>([]);
+  const [setFilter, setSetFilter] = useState<string[]>([]);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const [collectionData, charactersData] = await Promise.all([
+      const [collectionData, charactersData, setsData] = await Promise.all([
         fetchJson<CollectionWithCards>(
           `/api/collections/${encodeURIComponent(collectionName)}`,
         ),
         fetchJson<Character[]>("/api/characters"),
+        fetchJson<CardSet[]>("/api/sets"),
       ]);
       setCollection(collectionData);
       setCharacters(charactersData);
+      setSets(setsData);
       setNotFound(false);
       setError(null);
     } catch (err) {
@@ -50,16 +56,25 @@ export default function CollectionDetailPage({
 
   const visibleCards = useMemo(() => {
     if (!collection) return null;
-    if (characterFilter.length === 0) return collection.cards;
-    return collection.cards.filter((card) =>
-      characterFilter.some((id) => card.characterIds.includes(id)),
-    );
-  }, [collection, characterFilter]);
+    return collection.cards.filter((card) => {
+      const byCharacter =
+        characterFilter.length === 0 ||
+        characterFilter.some((id) => card.characterIds.includes(id));
+      const bySet =
+        setFilter.length === 0 || (card.setId ? setFilter.includes(card.setId) : false);
+      return byCharacter && bySet;
+    });
+  }, [collection, characterFilter, setFilter]);
 
   const characterNames = (card: Card) =>
     card.characterIds
       .map((id) => characters.find((character) => character.id === id)?.name)
       .filter((name): name is string => Boolean(name));
+
+  const setNames = (card: Card) => {
+    const set = card.setId ? sets.find((item) => item.id === card.setId) : undefined;
+    return set?.name;
+  };
 
   if (notFound) {
     return (
@@ -118,6 +133,7 @@ export default function CollectionDetailPage({
             value={characterFilter}
             onChange={setCharacterFilter}
           />
+          <CardSetFilter options={sets} value={setFilter} onChange={setSetFilter} />
           {visibleCards ? (
             <span className="text-sm text-zinc-500 dark:text-zinc-400">
               Найдено: {pluralizeCards(visibleCards.length)}
@@ -144,7 +160,7 @@ export default function CollectionDetailPage({
       visibleCards.length === 0 ? (
         <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-zinc-300 p-10 text-center dark:border-zinc-700">
           <p className="max-w-md text-sm leading-6 text-zinc-500 dark:text-zinc-400">
-            По выбранным персонажам карточек в этой коллекции не найдено.
+            По выбранным фильтрам карточек в этой коллекции не найдено.
           </p>
         </div>
       ) : null}
@@ -153,7 +169,11 @@ export default function CollectionDetailPage({
         <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {visibleCards.map((card) => (
             <li key={card.id}>
-              <CardTile card={card} characterBadges={characterNames(card)} />
+              <CardTile
+                card={card}
+                characterBadges={characterNames(card)}
+                setBadge={setNames(card)}
+              />
             </li>
           ))}
         </ul>

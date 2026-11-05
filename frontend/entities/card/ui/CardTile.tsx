@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { StarRating } from "@/shared/ui/StarRating";
 import type { Card } from "../model/types";
 
 interface CardTileProps {
@@ -11,13 +12,20 @@ interface CardTileProps {
   badges?: string[];
   /** Имена персонажей карточки (для бейджей). */
   characterBadges?: string[];
+  /** Название сета карточки, если задан (для бейджа). */
+  setBadge?: string;
 }
 
 /**
- * Карточка в списке: изображение, название, бейджи коллекций и персонажей.
+ * Карточка в списке: изображение, название, бейджи коллекций, персонажей и сета.
  * Вся плитка — ссылка на страницу карточки /cards/{название}.
  */
-export function CardTile({ card, badges = [], characterBadges = [] }: CardTileProps) {
+export function CardTile({
+  card,
+  badges = [],
+  characterBadges = [],
+  setBadge,
+}: CardTileProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const showImage = Boolean(card.imageUrl) && !imageFailed;
 
@@ -46,6 +54,14 @@ export function CardTile({ card, badges = [], characterBadges = [] }: CardTilePr
 
         <div className="flex flex-col gap-2 p-3">
           <h3 className="text-sm font-medium leading-5">{card.name}</h3>
+          {/* Сет необязателен: если не задан — бейджа нет. */}
+          {setBadge ? (
+            <ul className="flex flex-wrap gap-1">
+              <li className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-100 dark:bg-zinc-100 dark:text-zinc-800">
+                {setBadge}
+              </li>
+            </ul>
+          ) : null}
           {characterBadges.length > 0 ? (
             <ul className="flex flex-wrap gap-1">
               {characterBadges.map((badge) => (
@@ -70,6 +86,7 @@ export function CardTile({ card, badges = [], characterBadges = [] }: CardTilePr
               ))}
             </ul>
           ) : null}
+          <StarRating value={card.rating} size="sm" />
         </div>
       </article>
     </Link>

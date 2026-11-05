@@ -3,6 +3,7 @@ import express, { type NextFunction, type Request, type Response } from "express
 import { cardsRouter } from "./routes/cards.js";
 import { charactersRouter } from "./routes/characters.js";
 import { collectionsRouter } from "./routes/collections.js";
+import { setsRouter } from "./routes/sets.js";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/cards", cardsRouter);
 app.use("/api/collections", collectionsRouter);
 app.use("/api/characters", charactersRouter);
+app.use("/api/sets", setsRouter);
 
 // Неизвестные маршруты.
 app.use((req: Request, res: Response) => {

@@ -5,6 +5,7 @@ import type { Database, Card } from "../types.js";
 export const cardsRouter = Router();
 
 const MAX_CHARACTER_NAME_LENGTH = 80;
+const MAX_SET_NAME_LENGTH = 80;
 
 /** Ошибка валидации названия или null, если всё в порядке. */
 function validateName(name: string): string | null {
@@ -27,6 +28,24 @@ function nameTaken(db: Database, name: string, exceptId?: string): boolean {
   return db.cards.some(
     (card) => card.id !== exceptId && card.name.toLowerCase() === lower,
   );
+}
+
+/** Оценка по умолчанию: пользователь не оценивал карточку. */
+const DEFAULT_RATING = 0;
+
+/**
+ * Разбирает оценку карточки. Возвращает 0, если оценка не задана,
+ * ошибку — если значение не целое число от 0 до 5.
+ */
+function resolveRating(raw: unknown): { rating: number } | { error: string } {
+  if (raw === undefined || raw === null || raw === "") {
+    return { rating: DEFAULT_RATING };
+  }
+  const rating = Number(raw);
+  if (!Number.isInteger(rating) || rating < 0 || rating > 5) {
+    return { error: "Оценка должна быть целым числом от 0 до 5" };
+  }
+  return { rating };
 }
 
 /**
@@ -81,6 +100,39 @@ function resolveCharacters(
   return { ids };
 }
 
+/**
+ * Разбирает сет карточки (не более одного). Существующий берёт по id,
+ * новое название создаёт в справочнике. Пустое значение — сета нет.
+ * Возвращает ошибку, если указан несуществующий id.
+ */
+function resolveSet(
+  db: Database,
+  rawId: unknown,
+  rawName: unknown,
+): { setId?: string } | { error: string } {
+  const requestedId = typeof rawId === "string" && rawId ? rawId : "";
+  if (requestedId) {
+    const exists = db.sets.some((set) => set.id === requestedId);
+    if (!exists) return { error: "Указан несуществующий сет" };
+    return { setId: requestedId };
+  }
+
+  const name = typeof rawName === "string" ? rawName.trim() : "";
+  if (!name) return {};
+
+  if (name.length > MAX_SET_NAME_LENGTH) {
+    return { error: "Название сета слишком длинное" };
+  }
+
+  const lower = name.toLowerCase();
+  let set = db.sets.find((item) => item.name.toLowerCase() === lower);
+  if (!set) {
+    set = { id: createId("set"), name };
+    db.sets.push(set);
+  }
+  return { setId: set.id };
+}
+
 /** GET /api/cards — все карточки. */
 cardsRouter.get("/", async (_req, res) => {
   const db = await readDb();
@@ -89,16 +141,20 @@ cardsRouter.get("/", async (_req, res) => {
 
 /**
  * POST /api/cards — создать карточку:
- * { name, imageUrl?, collectionIds?, characterIds?, characterNames? }.
- * Имена персонажей (общий ввод через запятую) создаются автоматически.
+ * { name, imageUrl?, rating?, collectionIds?, characterIds?, characterNames?,
+ *   setId?, setName? }.
+ * Имена персонажей (общий ввод через запятую) и название сета создаются автоматически.
  */
 cardsRouter.post("/", async (req, res) => {
   const body = (req.body ?? {}) as {
     name?: unknown;
     imageUrl?: unknown;
+    rating?: unknown;
     collectionIds?: unknown;
     characterIds?: unknown;
     characterNames?: unknown;
+    setId?: unknown;
+    setName?: unknown;
   };
 
   const name = typeof body.name === "string" ? body.name.trim() : "";
@@ -112,6 +168,12 @@ cardsRouter.post("/", async (req, res) => {
   const urlError = validateImageUrl(imageUrl);
   if (urlError) {
     res.status(400).json({ error: urlError });
+    return;
+  }
+
+  const parsedRating = resolveRating(body.rating);
+  if ("error" in parsedRating) {
+    res.status(400).json({ error: parsedRating.error });
     return;
   }
 
@@ -139,10 +201,18 @@ cardsRouter.post("/", async (req, res) => {
     return;
   }
 
+  const parsedSet = resolveSet(db, body.setId, body.setName);
+  if ("error" in parsedSet) {
+    res.status(400).json({ error: parsedSet.error });
+    return;
+  }
+
   const card: Card = {
     id: createId("card"),
     name,
     ...(imageUrl ? { imageUrl } : {}),
+    rating: parsedRating.rating,
+    ...(parsedSet.setId ? { setId: parsedSet.setId } : {}),
     collectionIds: [...new Set(collectionIds)],
     characterIds: characters.ids,
   };
@@ -168,15 +238,20 @@ cardsRouter.get("/:name", async (req, res) => {
 
 /**
  * PUT /api/cards/:name — обновить карточку:
- * { name?, imageUrl?, collectionIds?, characterIds?, characterNames? }.
+ * { name?, imageUrl?, rating?, collectionIds?, characterIds?, characterNames?,
+ *   setId?, setName? }.
+ * Пустые setId/setName означают «убрать сет».
  */
 cardsRouter.put("/:name", async (req, res) => {
   const body = (req.body ?? {}) as {
     name?: unknown;
     imageUrl?: unknown;
+    rating?: unknown;
     collectionIds?: unknown;
     characterIds?: unknown;
     characterNames?: unknown;
+    setId?: unknown;
+    setName?: unknown;
   };
 
   const db = await readDb();
@@ -210,6 +285,18 @@ cardsRouter.put("/:name", async (req, res) => {
     }
   }
 
+  // Оценка: если поле не передано — оставляем прежнюю; иначе берём новую
+  // (пустое значение трактуется как 0 — «не оценил»).
+  let nextRating = card.rating;
+  if (body.rating !== undefined) {
+    const parsedRating = resolveRating(body.rating);
+    if ("error" in parsedRating) {
+      res.status(400).json({ error: parsedRating.error });
+      return;
+    }
+    nextRating = parsedRating.rating;
+  }
+
   let nextCollectionIds = card.collectionIds;
   if (Array.isArray(body.collectionIds)) {
     const requested = body.collectionIds.filter(
@@ -234,14 +321,29 @@ cardsRouter.put("/:name", async (req, res) => {
     nextCharacterIds = characters.ids;
   }
 
-  // Сначала убираем imageUrl, затем добавляем только актуальную —
-  // иначе очистка ссылки оставила бы старое значение из spread.
-  const { imageUrl: _previousUrl, ...withoutUrl } = card;
+  // Сет: не передан — оставляем прежний; передан пустым — убираем;
+  // иначе берём существующий по id или создаём по названию.
+  let nextSetId = card.setId;
+  if (body.setId !== undefined || body.setName !== undefined) {
+    const parsedSet = resolveSet(db, body.setId, body.setName);
+    if ("error" in parsedSet) {
+      res.status(400).json({ error: parsedSet.error });
+      return;
+    }
+    nextSetId = parsedSet.setId;
+  }
+
+  // Сначала убираем imageUrl и setId, затем добавляем актуальные —
+  // иначе очистка ссылки/сета оставила бы старое значение из spread.
+  const { imageUrl: _previousUrl, setId: _previousSetId, ...withoutOptional } = card;
   void _previousUrl;
+  void _previousSetId;
   const updated: Card = {
-    ...withoutUrl,
+    ...withoutOptional,
     name: nextName,
     ...(nextImageUrl ? { imageUrl: nextImageUrl } : {}),
+    rating: nextRating,
+    ...(nextSetId ? { setId: nextSetId } : {}),
     collectionIds: nextCollectionIds,
     characterIds: nextCharacterIds,
   };

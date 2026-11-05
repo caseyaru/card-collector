@@ -27,11 +27,23 @@
       "name": "Мшистый дух"
     }
   ],
+  "sets": [
+    {
+      "id": "set_flame",
+      "name": "Пламя и лёд"
+    },
+    {
+      "id": "set_forest",
+      "name": "Лесные истории"
+    }
+  ],
   "cards": [
     {
       "id": "card_dragon",
       "name": "Пламенный дракон",
       "imageUrl": "https://picsum.photos/seed/dragon/400/560",
+      "rating": 5,
+      "setId": "set_flame",
       "collectionIds": ["col_rare"],
       "characterIds": ["char_ember"]
     },
@@ -39,6 +51,8 @@
       "id": "card_golem",
       "name": "Ледяной голем",
       "imageUrl": "https://picsum.photos/seed/golem/400/560",
+      "rating": 3,
+      "setId": "set_flame",
       "collectionIds": ["col_basic", "col_rare"],
       "characterIds": ["char_frost"]
     },
@@ -46,6 +60,8 @@
       "id": "card_warden",
       "name": "Лесной страж",
       "imageUrl": "https://picsum.photos/seed/warden/400/560",
+      "rating": 0,
+      "setId": "set_forest",
       "collectionIds": ["col_basic", "col_legendary"],
       "characterIds": ["char_moss"]
     }
