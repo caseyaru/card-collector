@@ -1,26 +1,65 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* Базовые поверхности и текст: тёплые нейтральные оттенки с лиловым подтоном. */
+  --color-cream: #fbf9ea;
+  --color-ink: #332b3d;
+  --color-ink-soft: #4a4056;
+  --color-muted: #6f6479;
+  --color-faint: #8a7b96;
+  --color-line: #eee5f4;
+  --color-line-strong: #dccfe9;
+  --color-lilac-soft: #f6ecfb;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Фирменная палитра. */
+  --color-brand-pink: #f2619c;
+  --color-brand-pink-deep: #b83867;
+  --color-brand-pink-darker: #9c2d57;
+  --color-brand-pink-soft: #fde7f0;
+  --color-brand-lilac: #e7bef8;
+  --color-brand-blue: #93abd9;
+  --color-brand-blue-deep: #3f5c8a;
+  --color-brand-yellow: #ede986;
+  --color-brand-yellow-soft: #faf7d9;
+  --color-brand-gold: #c9b84a;
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  /* Сайт оформлен в светлой теме независимо от настроек ОС. */
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* Бледный оттенок жёлтого #ede986 + мягкий лиловый градиент сверху. */
+  background-color: var(--color-cream);
+  background-image: linear-gradient(180deg, #f7f0fb 0%, var(--color-cream) 380px);
+  background-repeat: no-repeat;
+  color: var(--color-ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background-color: var(--color-brand-lilac);
+  color: var(--color-ink);
+}
+
+/* Все интерактивные элементы должны явно показывать кликабельность. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* На мобильных уменьшаем базовый размер: все rem-размеры текста
+   и отступов становятся компактнее. */
+@media (max-width: 639px) {
+  html {
+    font-size: 15px;
+  }
 }

@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const API_URL = process.env.API_URL ?? "http://localhost:4000";
 
 const nextConfig: NextConfig = {
+  // Убираем плавающий значок Next.js в режиме разработки.
+  devIndicators: false,
   // Проксируем API-запросы на Express-бэкенд.
   async rewrites() {
     return [

@@ -80,7 +80,7 @@ export default function CollectionDetailPage({
     return (
       <Container className="flex flex-1 flex-col items-center justify-center gap-4 py-20 text-center">
         <h1 className="text-2xl font-semibold">Коллекция не найдена</h1>
-        <p className="max-w-md text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+        <p className="max-w-md text-sm leading-6 text-muted">
           Коллекции «{collectionName}» не существует. Возможно, она была удалена или
           в адресе опечатка.
         </p>
@@ -101,7 +101,7 @@ export default function CollectionDetailPage({
         actions={
           <Link
             href="/collection"
-            className="inline-flex h-9 items-center rounded-full border border-zinc-300 bg-white px-3 text-sm transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+            className="inline-flex h-9 items-center rounded-full border border-line-strong bg-white px-3 text-sm transition-colors hover:border-brand-pink/40 hover:bg-lilac-soft"
           >
             ← Все коллекции
           </Link>
@@ -111,7 +111,7 @@ export default function CollectionDetailPage({
       {error ? (
         <div
           role="alert"
-          className="flex items-center justify-between gap-4 rounded-2xl border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+          className="flex items-center justify-between gap-4 rounded-2xl border border-red-300 bg-red-50 p-4 text-sm text-red-700"
         >
           <span>{error}</span>
           <Button variant="secondary" size="sm" onClick={() => void load()}>
@@ -121,7 +121,7 @@ export default function CollectionDetailPage({
       ) : null}
 
       {collection === null && !error ? (
-        <p className="py-20 text-center text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="py-20 text-center text-sm text-muted">
           Загружаем коллекцию…
         </p>
       ) : null}
@@ -135,7 +135,7 @@ export default function CollectionDetailPage({
           />
           <CardSetFilter options={sets} value={setFilter} onChange={setSetFilter} />
           {visibleCards ? (
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">
+            <span className="text-sm text-muted">
               Найдено: {pluralizeCards(visibleCards.length)}
             </span>
           ) : null}
@@ -143,8 +143,8 @@ export default function CollectionDetailPage({
       ) : null}
 
       {collection !== null && collection.cards.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-zinc-300 p-10 text-center dark:border-zinc-700">
-          <p className="max-w-md text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+        <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-line-strong p-10 text-center">
+          <p className="max-w-md text-sm leading-6 text-muted">
             В этой коллекции пока нет карточек. Добавьте карточку на{" "}
             <Link href="/cards" className="underline underline-offset-4">
               странице карточек
@@ -158,15 +158,15 @@ export default function CollectionDetailPage({
       collection.cards.length > 0 &&
       visibleCards !== null &&
       visibleCards.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-zinc-300 p-10 text-center dark:border-zinc-700">
-          <p className="max-w-md text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+        <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-line-strong p-10 text-center">
+          <p className="max-w-md text-sm leading-6 text-muted">
             По выбранным фильтрам карточек в этой коллекции не найдено.
           </p>
         </div>
       ) : null}
 
       {visibleCards !== null && visibleCards.length > 0 ? (
-        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {visibleCards.map((card) => (
             <li key={card.id}>
               <CardTile

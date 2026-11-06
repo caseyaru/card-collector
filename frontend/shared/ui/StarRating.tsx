@@ -41,7 +41,7 @@ export function StarRating({
     return (
       <div className={cn("flex flex-col gap-1.5", className)}>
         {label ? (
-          <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+          <span className="text-sm font-medium text-muted">
             {label}
           </span>
         ) : null}
@@ -51,7 +51,7 @@ export function StarRating({
           aria-label={`Рейтинг: ${value} из ${MAX_RATING}`}
         >
           <Stars filled={shown} sizeClass={starSize} />
-          <span className="text-sm text-zinc-500 dark:text-zinc-400">
+          <span className="text-sm text-muted">
             {value} из {MAX_RATING}
           </span>
         </div>
@@ -80,14 +80,14 @@ export function StarRating({
                 onMouseEnter={() => setHovered(star)}
                 onFocus={() => setHovered(star)}
                 onClick={() => onChange?.(value === star ? 0 : star)}
-                className="rounded p-0.5 transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
+                className="rounded-full p-0.5 transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink"
               >
                 <Star filled={star <= shown} sizeClass={starSize} />
               </button>
             ),
           )}
         </div>
-        <span className="text-sm text-zinc-500 dark:text-zinc-400">
+        <span className="text-sm text-muted">
           {value} из {MAX_RATING}
         </span>
       </div>
@@ -121,8 +121,8 @@ function Star({ filled, sizeClass }: { filled: boolean; sizeClass: string }) {
       className={cn(
         sizeClass,
         filled
-          ? "fill-amber-400 text-amber-400"
-          : "fill-none text-zinc-300 dark:text-zinc-600",
+          ? "fill-brand-gold text-brand-gold"
+          : "fill-none text-line-strong",
       )}
       stroke="currentColor"
       strokeWidth="1.5"

@@ -21,6 +21,10 @@ export const metadata: Metadata = {
     template: "%s · Card Collector",
   },
   description: "Коллекция карточек: учёт, каталог и статистика.",
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png" }],
+    apple: [{ url: "/icon.png" }],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -29,12 +33,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ru"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-zinc-50 font-sans text-zinc-900 dark:bg-black dark:text-zinc-100">
+      <body className="flex min-h-full flex-col bg-cream font-sans text-ink">
         {/* usePathname() в шапке недоступен при статическом рендере —
             поэтому шапка стримится за границей Suspense. */}
         <Suspense
           fallback={
-            <div className="h-14 border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-black/80" />
+            <div className="h-14 border-b border-line bg-white/75 backdrop-blur" />
           }
         >
           <AppHeader />

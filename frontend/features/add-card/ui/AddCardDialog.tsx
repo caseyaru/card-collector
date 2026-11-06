@@ -135,7 +135,7 @@ export function AddCardDialog({ onAdded }: AddCardDialogProps) {
             label="Ссылка на изображение"
             type="url"
             inputMode="url"
-            placeholder="https://example.com/card.png"
+            placeholder="https://example.com"
             value={imageUrl}
             onChange={(event) => setImageUrl(event.target.value)}
             onBlur={commitImagePreview}
@@ -144,7 +144,7 @@ export function AddCardDialog({ onAdded }: AddCardDialogProps) {
 
           {/* Превью картинки: подтягивается, когда поле выходит из фокуса. */}
           {previewSource && !previewFailed ? (
-            <div className="relative aspect-[5/7] w-32 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800">
+            <div className="relative aspect-[5/7] w-32 overflow-hidden rounded-xl border border-line bg-lilac-soft">
               <Image
                 src={previewSource}
                 alt="Превью карточки"
@@ -155,7 +155,7 @@ export function AddCardDialog({ onAdded }: AddCardDialogProps) {
               />
             </div>
           ) : imagePreview ? (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-muted">
               Не удалось загрузить изображение по этой ссылке.
             </p>
           ) : null}
@@ -168,14 +168,6 @@ export function AddCardDialog({ onAdded }: AddCardDialogProps) {
             placeholder="Добавить в коллекции"
           />
 
-          <CharacterPicker
-            options={characters}
-            selectedIds={characterIds}
-            onSelectedIdsChange={setCharacterIds}
-            pendingNames={characterNames}
-            onPendingNamesChange={setCharacterNames}
-          />
-
           <CardSetPicker
             options={sets}
             selectedId={setId}
@@ -184,10 +176,18 @@ export function AddCardDialog({ onAdded }: AddCardDialogProps) {
             onPendingNameChange={setPendingSetName}
           />
 
+          <CharacterPicker
+            options={characters}
+            selectedIds={characterIds}
+            onSelectedIdsChange={setCharacterIds}
+            pendingNames={characterNames}
+            onPendingNamesChange={setCharacterNames}
+          />
+
           <StarRating value={rating} onChange={setRating} editable />
 
           {error ? (
-            <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+            <p role="alert" className="text-sm text-red-600">
               {error}
             </p>
           ) : null}

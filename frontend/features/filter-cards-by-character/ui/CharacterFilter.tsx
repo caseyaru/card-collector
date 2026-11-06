@@ -71,19 +71,19 @@ export function CharacterFilter({
             }
           }}
           className={cn(
-            "flex min-h-9 w-64 cursor-pointer flex-wrap items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 text-sm outline-none transition-colors dark:bg-zinc-900",
+            "flex min-h-9 w-64 cursor-pointer flex-wrap items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 text-sm outline-none transition-colors",
             open
-              ? "border-zinc-500"
-              : "border-zinc-300 focus:border-zinc-500 dark:border-zinc-700",
+              ? "border-brand-pink"
+              : "border-line-strong focus:border-brand-pink",
           )}
         >
           {selected.length === 0 ? (
-            <span className="text-zinc-500 dark:text-zinc-400">Все персонажи</span>
+            <span className="text-muted">Все персонажи</span>
           ) : (
             selected.map((character) => (
               <span
                 key={character.id}
-                className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                className="inline-flex items-center gap-1 rounded-full bg-brand-lilac/40 px-2 py-0.5 text-xs text-ink"
               >
                 {character.name}
                 <button
@@ -93,7 +93,7 @@ export function CharacterFilter({
                     event.stopPropagation();
                     remove(character.id);
                   }}
-                  className="rounded p-0.5 text-zinc-400 transition-colors hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+                  className="rounded-full p-0.5 text-faint transition-colors hover:bg-brand-pink/15 hover:text-brand-pink-deep"
                 >
                   ✕
                 </button>
@@ -106,7 +106,7 @@ export function CharacterFilter({
           <ul
             role="listbox"
             aria-label="Персонажи"
-            className="absolute left-0 z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900"
+            className="absolute left-0 z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-line bg-white py-1 shadow-lg"
           >
             <li>
               <button
@@ -115,20 +115,20 @@ export function CharacterFilter({
                   onChange([]);
                   setOpen(false);
                 }}
-                className="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                className="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-lilac-soft"
               >
                 Все персонажи
               </button>
             </li>
 
             {available.length === 0 && options.length > 0 ? (
-              <li className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <li className="px-3 py-2 text-sm text-muted">
                 Все персонажи уже выбраны.
               </li>
             ) : null}
 
             {options.length === 0 ? (
-              <li className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <li className="px-3 py-2 text-sm text-muted">
                 Персонажей пока нет.
               </li>
             ) : null}
@@ -140,7 +140,7 @@ export function CharacterFilter({
                   role="option"
                   aria-selected={false}
                   onClick={() => add(character.id)}
-                  className="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  className="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-lilac-soft"
                 >
                   {character.name}
                 </button>
@@ -154,7 +154,7 @@ export function CharacterFilter({
         <button
           type="button"
           onClick={() => onChange([])}
-          className="text-sm text-zinc-500 underline underline-offset-4 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100"
+          className="text-sm text-muted underline underline-offset-4 transition-colors hover:text-ink-soft"
         >
           Сбросить
         </button>

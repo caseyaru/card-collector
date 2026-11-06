@@ -106,20 +106,20 @@ export function CardSetPicker({
       <div className="relative" ref={containerRef}>
         <div
           className={cn(
-            "flex min-h-11 w-full flex-wrap items-center gap-1.5 rounded-xl border bg-white px-2 py-1.5 transition-colors dark:bg-zinc-950",
+            "flex min-h-11 w-full flex-wrap items-center gap-1.5 rounded-xl border bg-white px-2 py-1.5 transition-colors",
             open
-              ? "border-zinc-500"
-              : "border-zinc-300 focus-within:border-zinc-500 dark:border-zinc-700",
+              ? "border-brand-pink"
+              : "border-line-strong focus-within:border-brand-pink",
           )}
         >
           {selected ? (
-            <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 px-2 py-1 text-sm text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">
+            <span className="inline-flex items-center gap-1 rounded-lg bg-brand-lilac/35 px-2 py-1 text-sm text-ink-soft">
               {selected.name}
               <button
                 type="button"
                 aria-label={`Убрать «${selected.name}»`}
                 onClick={clear}
-                className="rounded p-0.5 text-zinc-400 transition-colors hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+                className="rounded-full p-0.5 text-faint transition-colors hover:bg-brand-pink/15 hover:text-brand-pink-deep"
               >
                 ✕
               </button>
@@ -128,13 +128,13 @@ export function CardSetPicker({
 
           {/* Тег нового названия: создастся на сервере при сохранении. */}
           {!selected && pendingName ? (
-            <span className="inline-flex items-center gap-1 rounded-lg border border-dashed border-zinc-400 px-2 py-1 text-sm text-zinc-600 dark:border-zinc-500 dark:text-zinc-300">
+            <span className="inline-flex items-center gap-1 rounded-lg border border-dashed border-brand-pink/50 bg-brand-pink-soft/40 px-2 py-1 text-sm text-brand-pink-deep">
               {pendingName}
               <button
                 type="button"
                 aria-label={`Убрать «${pendingName}»`}
                 onClick={() => onPendingNameChange("")}
-                className="rounded p-0.5 text-zinc-400 transition-colors hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+                className="rounded-full p-0.5 text-faint transition-colors hover:bg-brand-pink/15 hover:text-brand-pink-deep"
               >
                 ✕
               </button>
@@ -143,6 +143,10 @@ export function CardSetPicker({
 
           <input
             id={inputId}
+            // Отключаем браузерное автозаполнение: подсказки здесь не нужны.
+            name="card-set"
+            autoComplete="off"
+            spellCheck={false}
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={handleKeyDown}
@@ -153,9 +157,9 @@ export function CardSetPicker({
             placeholder={
               selected || pendingName
                 ? ""
-                : "Выберите из списка или введите название"
+                : "Выберите или введите название"
             }
-            className="min-w-40 flex-1 bg-transparent px-1 py-1 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 disabled:cursor-not-allowed dark:text-zinc-100"
+            className="min-w-40 flex-1 bg-transparent px-1 py-1 text-sm text-ink outline-none placeholder:text-faint disabled:cursor-not-allowed"
           />
         </div>
 
@@ -163,10 +167,10 @@ export function CardSetPicker({
           <ul
             role="listbox"
             aria-label="Сеты"
-            className="absolute left-0 right-0 z-10 mt-1 max-h-56 overflow-y-auto rounded-xl border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900"
+            className="absolute left-0 right-0 z-10 mt-1 max-h-56 overflow-y-auto rounded-xl border border-line bg-white py-1 shadow-lg"
           >
             {options.length === 0 ? (
-              <li className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <li className="px-3 py-2 text-sm text-muted">
                 Сетов пока нет — введите название и нажмите Enter.
               </li>
             ) : (
@@ -178,13 +182,13 @@ export function CardSetPicker({
                       role="option"
                       aria-selected={false}
                       onClick={() => choose(option.id)}
-                      className="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      className="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-lilac-soft"
                     >
                       {option.name}
                     </button>
                   </li>
                 ))}
-                <li className="border-t border-zinc-100 px-3 py-2 text-xs text-zinc-400 dark:border-zinc-800 dark:text-zinc-500">
+                <li className="border-t border-line px-3 py-2 text-xs text-faint">
                   Или введите новое название и нажмите Enter.
                 </li>
               </>
@@ -193,7 +197,7 @@ export function CardSetPicker({
         ) : null}
       </div>
 
-      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+      <span className="text-xs text-muted">
         Необязательно. У карточки может быть только один сет.
       </span>
     </div>

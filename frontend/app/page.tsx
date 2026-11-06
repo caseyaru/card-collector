@@ -21,21 +21,31 @@ export default function Home() {
       <section aria-label="Разделы" className="grid gap-4 sm:grid-cols-3">
         {mainNav
           .filter((item) => item.href !== "/")
-          .map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="group flex flex-col gap-2 rounded-2xl border border-zinc-200 bg-white p-5 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600"
-            >
-              <span className="font-medium">{item.label}</span>
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                {item.description}
-              </span>
-              <span className="text-sm text-zinc-400 transition-transform group-hover:translate-x-0.5 dark:text-zinc-500">
-                Перейти →
-              </span>
-            </Link>
-          ))}
+          .map((item, index) => {
+            const accents = ["bg-brand-pink", "bg-brand-blue", "bg-brand-gold"];
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="group flex flex-col gap-2 rounded-2xl border border-line bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand-pink/30 hover:shadow-lg hover:shadow-brand-pink/10"
+              >
+                <span className="flex items-center gap-2 font-medium">
+                  <span
+                    aria-hidden="true"
+                    className={`h-2.5 w-2.5 rounded-full ${
+                      accents[index % accents.length]
+                    }`}
+                  />
+                  {item.label}
+                </span>
+                <span className="text-sm text-muted">{item.description}</span>
+                <span className="text-sm text-muted transition-all group-hover:translate-x-0.5 group-hover:text-brand-pink-deep">
+                  Перейти →
+                </span>
+              </Link>
+            );
+          })}
       </section>
     </Container>
   );

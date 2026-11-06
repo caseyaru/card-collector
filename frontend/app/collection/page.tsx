@@ -37,7 +37,7 @@ export default function CollectionsPage() {
       {error ? (
         <div
           role="alert"
-          className="flex items-center justify-between gap-4 rounded-2xl border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+          className="flex items-center justify-between gap-4 rounded-2xl border border-red-300 bg-red-50 p-4 text-sm text-red-700"
         >
           <span>{error}</span>
           <Button variant="secondary" size="sm" onClick={() => void load()}>
@@ -47,14 +47,14 @@ export default function CollectionsPage() {
       ) : null}
 
       {collections === null && !error ? (
-        <p className="py-20 text-center text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="py-20 text-center text-sm text-muted">
           Загружаем коллекции…
         </p>
       ) : null}
 
       {collections !== null && collections.length === 0 && !error ? (
-        <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-zinc-300 p-10 text-center dark:border-zinc-700">
-          <p className="max-w-md text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+        <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-line-strong p-10 text-center">
+          <p className="max-w-md text-sm leading-6 text-muted">
             Коллекций пока нет. Нажмите «Создать коллекцию», чтобы начать.
           </p>
         </div>
@@ -66,13 +66,13 @@ export default function CollectionsPage() {
             <li key={collection.id}>
               <Link
                 href={`/collection/${encodeURIComponent(collection.name)}`}
-                className="group flex flex-col gap-2 rounded-2xl border border-zinc-200 bg-white p-5 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600"
+                className="group flex flex-col gap-2 rounded-2xl border border-line bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand-pink/30 hover:shadow-lg hover:shadow-brand-pink/10"
               >
                 <span className="font-medium">{collection.name}</span>
-                <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                <span className="text-sm text-muted">
                   {pluralizeCards(collection.cardsCount)}
                 </span>
-                <span className="text-sm text-zinc-400 transition-transform group-hover:translate-x-0.5 dark:text-zinc-500">
+                <span className="text-sm text-muted transition-all group-hover:translate-x-0.5 group-hover:text-brand-pink-deep">
                   Открыть →
                 </span>
               </Link>

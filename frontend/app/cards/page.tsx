@@ -76,14 +76,14 @@ export default function CardsPage() {
     <Container className="flex flex-1 flex-col gap-8 py-10">
       <PageHeader
         title="Карточки"
-        description="Общий список всех карточек. Добавляйте новые и отмечайте, в какие коллекции они входят."
+        description="Общий список всех карточек. Добавляйте новые и отмечайте, в какие коллекции и сеты они входят."
         actions={<AddCardDialog onAdded={() => void load()} />}
       />
 
       {error ? (
         <div
           role="alert"
-          className="flex items-center justify-between gap-4 rounded-2xl border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+          className="flex items-center justify-between gap-4 rounded-2xl border border-red-300 bg-red-50 p-4 text-sm text-red-700"
         >
           <span>{error}</span>
           <Button variant="secondary" size="sm" onClick={() => void load()}>
@@ -93,7 +93,7 @@ export default function CardsPage() {
       ) : null}
 
       {cards === null && !error ? (
-        <p className="py-20 text-center text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="py-20 text-center text-sm text-muted">
           Загружаем карточки…
         </p>
       ) : null}
@@ -107,7 +107,7 @@ export default function CardsPage() {
           />
           <CardSetFilter options={sets} value={setFilter} onChange={setSetFilter} />
           {visibleCards ? (
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">
+            <span className="text-sm text-muted">
               Найдено: {pluralizeCards(visibleCards.length)}
             </span>
           ) : null}
@@ -115,23 +115,23 @@ export default function CardsPage() {
       ) : null}
 
       {visibleCards !== null && cards !== null && cards.length === 0 && !error ? (
-        <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-zinc-300 p-10 text-center dark:border-zinc-700">
-          <p className="max-w-md text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+        <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-line-strong p-10 text-center">
+          <p className="max-w-md text-sm leading-6 text-muted">
             Карточек пока нет. Нажмите «Добавить карточку», чтобы создать первую.
           </p>
         </div>
       ) : null}
 
       {visibleCards !== null && cards !== null && cards.length > 0 && visibleCards.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-zinc-300 p-10 text-center dark:border-zinc-700">
-          <p className="max-w-md text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+        <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-line-strong p-10 text-center">
+          <p className="max-w-md text-sm leading-6 text-muted">
             По выбранным фильтрам карточек не найдено.
           </p>
         </div>
       ) : null}
 
       {visibleCards !== null && visibleCards.length > 0 ? (
-        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {visibleCards.map((card) => (
             <li key={card.id}>
               <CardTile

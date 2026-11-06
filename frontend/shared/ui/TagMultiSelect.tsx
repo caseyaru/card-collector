@@ -93,16 +93,16 @@ export function TagMultiSelect({
             }
           }}
           className={cn(
-            "flex min-h-11 w-full cursor-pointer flex-wrap items-center gap-1.5 rounded-xl border bg-white px-2 py-1.5 outline-none transition-colors dark:bg-zinc-950",
+            "flex min-h-11 w-full cursor-pointer flex-wrap items-center gap-1.5 rounded-xl border bg-white px-2 py-1.5 outline-none transition-colors",
             open
-              ? "border-zinc-500"
-              : "border-zinc-300 focus:border-zinc-500 dark:border-zinc-700",
+              ? "border-brand-pink"
+              : "border-line-strong focus:border-brand-pink",
           )}
         >
           {selected.map((option) => (
             <span
               key={option.id}
-              className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 px-2 py-1 text-sm text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100"
+              className="inline-flex items-center gap-1 rounded-lg bg-brand-lilac/35 px-2 py-1 text-sm text-ink-soft"
             >
               {option.name}
               <button
@@ -112,7 +112,7 @@ export function TagMultiSelect({
                   event.stopPropagation();
                   remove(option.id);
                 }}
-                className="rounded p-0.5 text-zinc-400 transition-colors hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+                className="rounded-full p-0.5 text-faint transition-colors hover:bg-brand-pink/15 hover:text-brand-pink-deep"
               >
                 ✕
               </button>
@@ -120,7 +120,7 @@ export function TagMultiSelect({
           ))}
 
           {selected.length === 0 ? (
-            <span className="px-1 text-sm text-zinc-400 dark:text-zinc-500">
+            <span className="px-1 text-sm text-faint">
               {placeholder}
             </span>
           ) : null}
@@ -130,10 +130,10 @@ export function TagMultiSelect({
           <ul
             role="listbox"
             aria-label={label}
-            className="absolute left-0 right-0 z-10 mt-1 max-h-56 overflow-y-auto rounded-xl border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900"
+            className="absolute left-0 right-0 z-10 mt-1 max-h-56 overflow-y-auto rounded-xl border border-line bg-white py-1 shadow-lg"
           >
             {available.length === 0 ? (
-              <li className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <li className="px-3 py-2 text-sm text-muted">
                 {options.length === 0
                   ? "Коллекций пока нет — создайте их на странице «Коллекции»."
                   : "Все коллекции уже добавлены."}
@@ -146,7 +146,7 @@ export function TagMultiSelect({
                     role="option"
                     aria-selected={false}
                     onClick={() => add(option.id)}
-                    className="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    className="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-lilac-soft"
                   >
                     {option.name}
                   </button>
@@ -157,7 +157,7 @@ export function TagMultiSelect({
         ) : null}
       </div>
 
-      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+      <span className="text-xs text-muted">
         Коллекций выбрано: {selected.length}
       </span>
     </div>

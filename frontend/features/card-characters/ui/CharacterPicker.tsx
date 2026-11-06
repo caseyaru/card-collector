@@ -149,23 +149,23 @@ export function CharacterPicker({
       <div className="relative" ref={containerRef}>
         <div
           className={cn(
-            "flex min-h-11 w-full flex-wrap items-center gap-1.5 rounded-xl border bg-white px-2 py-1.5 transition-colors dark:bg-zinc-950",
+            "flex min-h-11 w-full flex-wrap items-center gap-1.5 rounded-xl border bg-white px-2 py-1.5 transition-colors",
             open
-              ? "border-zinc-500"
-              : "border-zinc-300 focus-within:border-zinc-500 dark:border-zinc-700",
+              ? "border-brand-pink"
+              : "border-line-strong focus-within:border-brand-pink",
           )}
         >
           {selected.map((character) => (
             <span
               key={character.id}
-              className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 px-2 py-1 text-sm text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100"
+              className="inline-flex items-center gap-1 rounded-lg bg-brand-lilac/35 px-2 py-1 text-sm text-ink-soft"
             >
               {character.name}
               <button
                 type="button"
                 aria-label={`Убрать «${character.name}»`}
                 onClick={() => remove(character.id)}
-                className="rounded p-0.5 text-zinc-400 transition-colors hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+                className="rounded-full p-0.5 text-faint transition-colors hover:bg-brand-pink/15 hover:text-brand-pink-deep"
               >
                 ✕
               </button>
@@ -176,14 +176,14 @@ export function CharacterPicker({
           {pendingNames.map((name) => (
             <span
               key={name.toLowerCase()}
-              className="inline-flex items-center gap-1 rounded-lg border border-dashed border-zinc-400 px-2 py-1 text-sm text-zinc-600 dark:border-zinc-500 dark:text-zinc-300"
+              className="inline-flex items-center gap-1 rounded-lg border border-dashed border-brand-pink/50 bg-brand-pink-soft/40 px-2 py-1 text-sm text-brand-pink-deep"
             >
               {name}
               <button
                 type="button"
                 aria-label={`Убрать «${name}»`}
                 onClick={() => removePending(name)}
-                className="rounded p-0.5 text-zinc-400 transition-colors hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+                className="rounded-full p-0.5 text-faint transition-colors hover:bg-brand-pink/15 hover:text-brand-pink-deep"
               >
                 ✕
               </button>
@@ -192,6 +192,10 @@ export function CharacterPicker({
 
           <input
             id={inputId}
+            // Отключаем браузерное автозаполнение: подсказки здесь не нужны.
+            name="card-characters"
+            autoComplete="off"
+            spellCheck={false}
             value={draft}
             onChange={(event) => handleChange(event.target.value)}
             onKeyDown={handleKeyDown}
@@ -200,10 +204,10 @@ export function CharacterPicker({
             onClick={() => setOpen(true)}
             placeholder={
               selected.length === 0 && pendingNames.length === 0
-                ? "Выберите из списка или введите имя"
+                ? "Выберите или введите имя"
                 : ""
             }
-            className="min-w-40 flex-1 bg-transparent px-1 py-1 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 dark:text-zinc-100"
+            className="min-w-40 flex-1 bg-transparent px-1 py-1 text-sm text-ink outline-none placeholder:text-faint"
           />
         </div>
 
@@ -211,10 +215,10 @@ export function CharacterPicker({
           <ul
             role="listbox"
             aria-label="Персонажи"
-            className="absolute left-0 right-0 z-10 mt-1 max-h-56 overflow-y-auto rounded-xl border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900"
+            className="absolute left-0 right-0 z-10 mt-1 max-h-56 overflow-y-auto rounded-xl border border-line bg-white py-1 shadow-lg"
           >
             {available.length === 0 ? (
-              <li className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <li className="px-3 py-2 text-sm text-muted">
                 {options.length === 0
                   ? "Персонажей пока нет — введите имя и нажмите Enter."
                   : "Все персонажи уже добавлены."}
@@ -227,7 +231,7 @@ export function CharacterPicker({
                     role="option"
                     aria-selected={false}
                     onClick={() => add(character.id)}
-                    className="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    className="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-lilac-soft"
                   >
                     {character.name}
                   </button>
@@ -238,7 +242,7 @@ export function CharacterPicker({
         ) : null}
       </div>
 
-      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+      <span className="text-xs text-muted">
         Выбрано: {selected.length}
         {pendingNames.length > 0
           ? ` · новых имён: ${pendingNames.length} (создадутся при сохранении)`

@@ -124,6 +124,10 @@ function resolveSet(
     return { error: "Название сета слишком длинное" };
   }
 
+  if (name.includes("/")) {
+    return { error: "Название сета не может содержать символ «/»" };
+  }
+
   const lower = name.toLowerCase();
   let set = db.sets.find((item) => item.name.toLowerCase() === lower);
   if (!set) {

@@ -32,21 +32,21 @@ export function CardTile({
   return (
     <Link
       href={`/cards/${encodeURIComponent(card.name)}`}
-      className="block h-full rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
+      className="block h-full rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink"
     >
-      <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white transition-shadow hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="relative aspect-[5/7] w-full bg-zinc-100 dark:bg-zinc-800">
+      <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand-pink/30 hover:shadow-lg hover:shadow-brand-pink/10">
+        <div className="relative aspect-[5/7] w-full bg-lilac-soft">
           {showImage ? (
             <Image
               src={card.imageUrl as string}
               alt={card.name}
               fill
-              sizes="(max-width: 640px) 50vw, 220px"
+              sizes="(max-width: 640px) 100vw, 220px"
               className="object-cover"
               onError={() => setImageFailed(true)}
             />
           ) : (
-            <div className="flex h-full items-center justify-center px-3 text-center text-xs text-zinc-400 dark:text-zinc-500">
+            <div className="flex h-full items-center justify-center px-3 text-center text-xs text-faint">
               Нет изображения
             </div>
           )}
@@ -57,7 +57,7 @@ export function CardTile({
           {/* Сет необязателен: если не задан — бейджа нет. */}
           {setBadge ? (
             <ul className="flex flex-wrap gap-1">
-              <li className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-100 dark:bg-zinc-100 dark:text-zinc-800">
+              <li className="rounded-full bg-brand-blue/15 px-2 py-0.5 text-xs text-brand-blue-deep">
                 {setBadge}
               </li>
             </ul>
@@ -67,7 +67,7 @@ export function CardTile({
               {characterBadges.map((badge) => (
                 <li
                   key={badge}
-                  className="rounded-full border border-zinc-300 px-2 py-0.5 text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400"
+                  className="rounded-full border border-line-strong px-2 py-0.5 text-xs text-muted"
                 >
                   {badge}
                 </li>
@@ -79,7 +79,7 @@ export function CardTile({
               {badges.map((badge) => (
                 <li
                   key={badge}
-                  className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                  className="rounded-full bg-brand-lilac/40 px-2 py-0.5 text-xs text-ink-soft"
                 >
                   {badge}
                 </li>

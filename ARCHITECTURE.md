@@ -12,9 +12,9 @@ card-collector/
 
 | Слой        | Назначение                                    | Примеры в проекте                              |
 | ----------- | --------------------------------------------- | ---------------------------------------------- |
-| `app`       | Роутинг Next.js, composition корневой разметки | `app/layout.tsx`, `app/cards/page.tsx`, `app/collection/[slug]/page.tsx`, `app/cards/[slug]/page.tsx` |
+| `app`       | Роутинг Next.js, composition корневой разметки | `app/layout.tsx`, `app/cards/page.tsx`, `app/collection/[slug]/page.tsx`, `app/sets/[slug]/page.tsx`, `app/cards/[slug]/page.tsx` |
 | `widgets`   | Крупные составные блоки интерфейса             | `widgets/app-header`, `widgets/app-footer`      |
-| `features`  | Пользовательские действия                      | `features/add-card`, `features/create-collection`, `features/card-characters`, `features/card-set`, `features/filter-cards-by-character`, `features/filter-cards-by-set` |
+| `features`  | Пользовательские действия                      | `features/add-card`, `features/create-collection`, `features/create-set`, `features/card-characters`, `features/card-set`, `features/filter-cards-by-character`, `features/filter-cards-by-set` |
 | `entities`  | Сущности предметной области                    | `entities/card`, `entities/collection`, `entities/character`, `entities/set` |
 | `shared`    | Переиспользуемые инструменты без бизнес-логики | `shared/ui`, `shared/lib`, `shared/config`      |
 
@@ -43,5 +43,7 @@ card-collector/
 | `/cards/{name}`        | Страница карточки: информация, редактирование, удаление |
 | `/collection`          | Список коллекций + «Создать коллекцию»          |
 | `/collection/{name}`   | Карточки конкретной коллекции (404-состояние) + фильтры |
+| `/sets`                | Список сетов + «Создать сет»                    |
+| `/sets/{name}`         | Карточки конкретного сета (404-состояние) + фильтр по персонажам |
 
 `app` содержит только точку входа (роутинг и metadata), UI собирается из слоёв FSD.

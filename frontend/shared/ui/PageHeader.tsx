@@ -13,14 +13,18 @@ export function PageHeader({ title, description, actions, className }: PageHeade
   return (
     <header
       className={cn(
-        "flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end sm:justify-between dark:border-zinc-800",
+        "relative flex flex-col gap-4 border-b border-line pb-6 sm:flex-row sm:items-end sm:justify-between",
         className,
       )}
     >
+      <span
+        aria-hidden="true"
+        className="absolute -bottom-px left-0 h-0.5 w-16 rounded-full bg-brand-pink"
+      />
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
         {description ? (
-          <p className="max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+          <p className="max-w-2xl text-sm leading-6 text-muted">
             {description}
           </p>
         ) : null}

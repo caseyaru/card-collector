@@ -31,6 +31,11 @@ setsRouter.post("/", async (req, res) => {
     return;
   }
 
+  if (name.includes("/")) {
+    res.status(400).json({ error: "Название не может содержать символ «/»" });
+    return;
+  }
+
   const db = await readDb();
   const existing = db.sets.find(
     (set) => set.name.toLowerCase() === name.toLowerCase(),
@@ -47,6 +52,20 @@ setsRouter.post("/", async (req, res) => {
   await writeDb(db);
 
   res.status(201).json({ ...set, cardsCount: 0 });
+});
+
+/** GET /api/sets/:name — сет с его карточками. */
+setsRouter.get("/:name", async (req, res) => {
+  const db = await readDb();
+  const set = db.sets.find((item) => item.name === req.params.name);
+
+  if (!set) {
+    res.status(404).json({ error: "Сет не найден" });
+    return;
+  }
+
+  const cards = db.cards.filter((card) => card.setId === set.id);
+  res.json({ ...set, cards });
 });
 
 /** DELETE /api/sets/:id — удалить сет из справочника и отвязать от карточек. */

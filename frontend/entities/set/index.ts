@@ -1,1 +1,5 @@
-export type { CardSet, CardSetWithStats } from "./model/types";
+export type {
+  CardSet,
+  CardSetWithCards,
+  CardSetWithStats,
+} from "./model/types";

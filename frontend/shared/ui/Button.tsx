@@ -24,13 +24,13 @@ interface ButtonNativeProps
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white",
+    "bg-brand-pink-deep text-white shadow-sm shadow-brand-pink/30 hover:bg-brand-pink-darker",
   secondary:
-    "border border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800",
+    "border border-line-strong bg-white text-ink shadow-sm hover:border-brand-lilac hover:bg-lilac-soft",
   ghost:
-    "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
+    "text-ink-soft hover:bg-brand-lilac/25 hover:text-ink",
   danger:
-    "border border-red-300 bg-white text-red-600 hover:bg-red-50 dark:border-red-900 dark:bg-zinc-900 dark:text-red-400 dark:hover:bg-red-950",
+    "border border-red-300 bg-white text-red-600 hover:bg-red-50",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -40,7 +40,7 @@ const sizeClasses: Record<ButtonSize, string> = {
 
 function classes(variant: ButtonVariant, size: ButtonSize, className?: string) {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500",
+    "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink",
     variantClasses[variant],
     sizeClasses[size],
     className,

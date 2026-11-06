@@ -204,7 +204,7 @@ export default function CardDetailPage({
     return (
       <Container className="flex flex-1 flex-col items-center justify-center gap-4 py-20 text-center">
         <h1 className="text-2xl font-semibold">Карточка не найдена</h1>
-        <p className="max-w-md text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+        <p className="max-w-md text-sm leading-6 text-muted">
           Карточки «{cardName}» не существует. Возможно, она была удалена или
           в адресе опечатка.
         </p>
@@ -217,7 +217,7 @@ export default function CardDetailPage({
     <Container className="flex flex-1 flex-col gap-8 py-10">
       <Link
         href="/cards"
-        className="inline-flex h-9 w-fit items-center rounded-full border border-zinc-300 bg-white px-3 text-sm transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+        className="inline-flex h-9 w-fit items-center rounded-full border border-line-strong bg-white px-3 text-sm transition-colors hover:border-brand-pink/40 hover:bg-lilac-soft"
       >
         ← Все карточки
       </Link>
@@ -225,7 +225,7 @@ export default function CardDetailPage({
       {error ? (
         <div
           role="alert"
-          className="flex items-center justify-between gap-4 rounded-2xl border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+          className="flex items-center justify-between gap-4 rounded-2xl border border-red-300 bg-red-50 p-4 text-sm text-red-700"
         >
           <span>{error}</span>
           <Button variant="secondary" size="sm" onClick={() => void load()}>
@@ -235,7 +235,7 @@ export default function CardDetailPage({
       ) : null}
 
       {card === null && !error ? (
-        <p className="py-20 text-center text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="py-20 text-center text-sm text-muted">
           Загружаем карточку…
         </p>
       ) : null}
@@ -244,7 +244,7 @@ export default function CardDetailPage({
         <div className="grid gap-8 md:grid-cols-[minmax(0,320px)_1fr]">
           {/* Слева: изображение. В режиме редактирования показывает превью
               ссылки, подтянутой из поля (обновляется при потере фокуса). */}
-          <div className="relative aspect-[5/7] w-full overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800">
+          <div className="relative aspect-[5/7] w-full overflow-hidden rounded-2xl border border-line bg-lilac-soft">
             {shownImageUrl && !previewFailed ? (
               <Image
                 src={shownImageUrl}
@@ -257,7 +257,7 @@ export default function CardDetailPage({
                 }}
               />
             ) : (
-              <div className="flex h-full items-center justify-center px-4 text-center text-sm text-zinc-400 dark:text-zinc-500">
+              <div className="flex h-full items-center justify-center px-4 text-center text-sm text-faint">
                 {editing && imagePreview
                   ? "Не удалось загрузить изображение"
                   : "Нет изображения"}
@@ -292,7 +292,7 @@ export default function CardDetailPage({
                 label="Ссылка на изображение"
                 type="url"
                 inputMode="url"
-                placeholder="https://example.com/card.png"
+                placeholder="https://example.com"
                 value={imageUrl}
                 onChange={(event) => setImageUrl(event.target.value)}
                 onBlur={commitImagePreview}
@@ -307,14 +307,6 @@ export default function CardDetailPage({
                 placeholder="Добавить в коллекции"
               />
 
-              <CharacterPicker
-                options={characters}
-                selectedIds={characterIds}
-                onSelectedIdsChange={setCharacterIds}
-                pendingNames={characterNames}
-                onPendingNamesChange={setCharacterNames}
-              />
-
               <CardSetPicker
                 options={sets}
                 selectedId={setId}
@@ -323,10 +315,18 @@ export default function CardDetailPage({
                 onPendingNameChange={setPendingSetName}
               />
 
+              <CharacterPicker
+                options={characters}
+                selectedIds={characterIds}
+                onSelectedIdsChange={setCharacterIds}
+                pendingNames={characterNames}
+                onPendingNamesChange={setCharacterNames}
+              />
+
               <StarRating value={rating} onChange={setRating} editable />
 
               {formError ? (
-                <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+                <p role="alert" className="text-sm text-red-600">
                   {formError}
                 </p>
               ) : null}
@@ -351,7 +351,7 @@ export default function CardDetailPage({
               <h1 className="text-3xl font-semibold leading-tight">{card.name}</h1>
 
               <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                <span className="text-sm font-medium text-muted">
                   Коллекции
                 </span>
                 {card.collectionIds.length > 0 ? (
@@ -365,7 +365,7 @@ export default function CardDetailPage({
                         <li key={collectionId}>
                           <Link
                             href={`/collection/${encodeURIComponent(collection.name)}`}
-                            className="inline-flex rounded-full bg-zinc-100 px-3 py-1 text-sm text-zinc-700 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                            className="inline-flex rounded-full bg-brand-lilac/35 px-3 py-1 text-sm text-ink-soft transition-colors hover:bg-brand-lilac/55"
                           >
                             {collection.name}
                           </Link>
@@ -374,30 +374,8 @@ export default function CardDetailPage({
                     })}
                   </ul>
                 ) : (
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className="text-sm text-muted">
                     Карточка пока не состоит в коллекциях.
-                  </p>
-                )}
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                  Персонажи
-                </span>
-                {cardCharacters.length > 0 ? (
-                  <ul className="flex flex-wrap gap-2">
-                    {cardCharacters.map((character) => (
-                      <li
-                        key={character.id}
-                        className="inline-flex rounded-full bg-zinc-100 px-3 py-1 text-sm text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
-                      >
-                        {character.name}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                    У карточки пока нет персонажей.
                   </p>
                 )}
               </div>
@@ -405,16 +383,43 @@ export default function CardDetailPage({
               {/* Сет необязателен: если не задан — блок не показываем. */}
               {cardSet ? (
                 <div className="flex flex-col gap-2">
-                  <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <span className="text-sm font-medium text-muted">
                     Сет
                   </span>
                   <ul className="flex flex-wrap gap-2">
-                    <li className="inline-flex rounded-full bg-zinc-100 px-3 py-1 text-sm text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-                      {cardSet.name}
+                    <li>
+                      <Link
+                        href={`/sets/${encodeURIComponent(cardSet.name)}`}
+                        className="inline-flex rounded-full bg-brand-blue/15 px-3 py-1 text-sm text-brand-blue-deep transition-colors hover:bg-brand-blue/25"
+                      >
+                        {cardSet.name}
+                      </Link>
                     </li>
                   </ul>
                 </div>
               ) : null}
+
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-medium text-muted">
+                  Персонажи
+                </span>
+                {cardCharacters.length > 0 ? (
+                  <ul className="flex flex-wrap gap-2">
+                    {cardCharacters.map((character) => (
+                      <li
+                        key={character.id}
+                        className="inline-flex rounded-full bg-brand-yellow-soft px-3 py-1 text-sm text-ink-soft"
+                      >
+                        {character.name}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted">
+                    У карточки пока нет персонажей.
+                  </p>
+                )}
+              </div>
 
               <StarRating value={card.rating} label="Рейтинг" />
 

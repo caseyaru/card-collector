@@ -19,13 +19,13 @@ export function TextField({ label, hint, className, ...rest }: TextFieldProps) {
         id={inputId}
         aria-describedby={hint ? hintId : undefined}
         className={cn(
-          "h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100",
+          "h-11 rounded-xl border border-line-strong bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-faint focus:border-brand-pink focus:ring-2 focus:ring-brand-pink/15",
           className,
         )}
         {...rest}
       />
       {hint ? (
-        <span id={hintId} className="text-xs text-zinc-500 dark:text-zinc-400">
+        <span id={hintId} className="text-xs text-muted">
           {hint}
         </span>
       ) : null}
