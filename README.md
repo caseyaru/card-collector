@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Card Collector
 
-## Getting Started
+Полноценный проект для портфолио: учёт коллекции карточек (название, изображение, коллекции, персонажи, сет) без внешней базы данных.
 
-First, run the development server:
+**Стек:** Next.js 16 (App Router, Tailwind CSS 4) · Express 5 + TypeScript · JSON-файл как хранилище.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Возможности
+
+- `/cards` — общий список всех карточек; добавление карточки через форму в попапе (название, ссылка на изображение, выбор коллекций, сета и персонажей, рейтинг звёздами), фильтры по персонажам и сетам.
+- `/collection` — список коллекций; создание коллекции через форму в попапе (название).
+- `/collection/{название}` — карточки выбранной коллекции с фильтрами по персонажам и сетам.
+- `/sets` — список сетов с количеством карточек; создание сета через форму в попапе (название).
+- `/sets/{название}` — карточки выбранного сета с фильтром по персонажам.
+- `/cards/{название}` — страница карточки: изображение, коллекции, сет, персонажи, рейтинг, редактирование и удаление. При редактировании ссылки на изображение превью подтягивается в контейнер, как только поле теряет фокус (без ожидания сохранения).
+- Одна карточка может входить в любое количество коллекций и отображается и в общем списке, и в каждом из своих коллекционных разделов.
+- Персонажи выбираются из справочника или создаются на месте (ввод через запятую или Enter); отдельной страницы у них нет.
+- Сет идёт сразу после коллекций и является необязательным: у карточки может быть не более одного сета. Выбирается из справочника или создаётся на месте (ввод названия + Enter). Если сет не задан, он не отображается ни в информации о карточке, ни в плитке списка.
+- Рейтинг — оценка от 0 до 5 звёздами (заполненные показывают оценку, пустые — недостающие шаги до 5/5). `0` означает, что карточку не оценивали; поле необязательное. Отображается внизу информации о карточке и в плитке списка.
+- Бэкенда «в облаке» нет: данные хранятся в локальном JSON-файле `backend/data/db.json`.
+
+## Структура
+
+```
+card-collector/
+├── backend/                # Express API (TypeScript, tsx)
+│   ├── data/db.example.json # пример базы для первого запуска
+│   ├── data/db.json        # хранилище данных (создаётся локально, не в репозитории)
+│   └── src/
+│       ├── server.ts       # точка входа, /api/*
+│       ├── db.ts           # чтение/запись JSON-базы
+│       ├── types.ts        # Card, Collection, Character, CardSet
+│       └── routes/         # cards.ts, collections.ts, characters.ts, sets.ts
+├── frontend/               # Next.js 16 (FSD-слои)
+│   ├── app/                # роутинг
+│   ├── widgets/            # шапка, подвал
+│   ├── features/           # add-card, create-collection, create-set, card-set (формы в попапах)
+│   ├── entities/           # card, collection, character, set
+│   └── shared/             # ui, lib, config
+├── package.json            # корневые скрипты (concurrently)
+└── ARCHITECTURE.md         # описание архитектуры
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Запуск
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install                 # зависимости корня (concurrently)
+cd backend && npm install   # backend (не используйте `npm --prefix backend install`: npm добавит корень как зависимость)
+cd ..
+npm run dev                 # backend: http://localhost:4000, frontend: http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Откройте http://localhost:3000. Фронтенд ходит в API через прокси `/api/*` (см. `frontend/next.config.ts`).
 
-## Learn More
+Продакшен-сборка: `npm run build`, запуск: `npm start`.
 
-To learn more about Next.js, take a look at the following resources:
+## Оформление
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Сайт оформлен в светлой пастельной теме; цвета заданы токенами Tailwind в `frontend/app/globals.css`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Роль | Цвет |
+| ---- | ---- |
+| Акцент, активная навигация | `#f2619c` и оттенки `#b83867` / `#fde7f0` |
+| Второй акцент (теги, коллекции) | `#e7bef8` |
+| Сеты, информационные бейджи | `#93abd9` и `#3f5c8a` |
+| Фон сайта, тёплые акценты | `#ede986` (бледный фон `#fbf9ea`) |
+| Текст | `#332b3d`, `#4a4056`, `#6f6479` |
 
-## Deploy on Vercel
+Кнопки, поля и карточки используют мягкие скругления (`rounded-xl`/`rounded-2xl`), а иконка сайта лежит в `frontend/public/icon.png` и подключена как favicon и логотип в шапке.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## API
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Метод | Путь                          | Описание                                                       |
+| ----- | ----------------------------- | -------------------------------------------------------------- |
+| GET   | `/api/health`                 | Проверка доступности                                           |
+| GET   | `/api/cards`                  | Все карточки                                                   |
+| POST  | `/api/cards`                  | Создать карточку `{ name, imageUrl?, rating?, collectionIds?, characterIds?, characterNames?, setId?, setName? }` (409 при дубликате названия) |
+| GET   | `/api/cards/:name`            | Карточка по названию                                           |
+| PUT   | `/api/cards/:name`            | Обновить карточку (тело как у POST; пустые `setId`/`setName` убирают сет) |
+| DELETE| `/api/cards/:name`            | Удалить карточку                                               |
+| GET   | `/api/collections`            | Все коллекции с `cardsCount`                                   |
+| POST  | `/api/collections`            | Создать коллекцию `{ name }` (409 при дубликате)               |
+| GET   | `/api/collections/:name`      | Коллекция с карточками                                         |
+| GET   | `/api/characters`             | Все персонажи с `cardsCount`                                   |
+| POST  | `/api/characters`             | Создать персонажа `{ name }` (409 при дубликате)               |
+| DELETE| `/api/characters/:id`         | Удалить персонажа (с отвязкой от карточек)                     |
+| GET   | `/api/sets`                   | Все сеты с `cardsCount`                                        |
+| POST  | `/api/sets`                   | Создать сет `{ name }` (повтор возвращает существующий)        |
+| GET   | `/api/sets/:name`             | Сет с его карточками                                           |
+| DELETE| `/api/sets/:id`               | Удалить сет (с отвязкой от карточек)                           |
+
+Названия карточек, коллекций и сетов в путях URL-кодируются (поддерживается кириллица). Оценка `rating` — целое число от 0 до 5, где `0` — «не оценивал» (значение по умолчанию). У карточки не более одного сета: `setId` — идентификатор из `/api/sets`, `setName` — название нового сета (создаётся на сервере).
+
+## Данные
+
+Данные хранятся в `backend/data/db.json`. Файл не попадает в репозиторий (в нём ваши личные данные), но в проекте есть `backend/data/db.example.json` с демо-набором (коллекции, персонажи, сеты, карточки с изображениями picsum.photos). Чтобы начать с демо-данных, скопируйте пример:
+
+```bash
+cp backend/data/db.example.json backend/data/db.json
+```
+
+Если файла нет, он создастся пустым при первом запуске. Путь к хранилищу переопределяется переменной `DB_PATH`, порт API — `PORT`.
