@@ -1,23 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { use, useCallback, useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CardTile, type Card } from "@/entities/card";
 import type { Character } from "@/entities/character";
-import type { CollectionWithCards } from "@/entities/collection";
+import type { Collection, CollectionWithCards } from "@/entities/collection";
 import type { CardSet } from "@/entities/set";
 import { CharacterFilter } from "@/features/filter-cards-by-character";
 import { CardSetFilter } from "@/features/filter-cards-by-set";
+import { RenameDialog } from "@/features/rename-entity";
 import { fetchJson } from "@/shared/lib/fetcher";
 import { pluralizeCards } from "@/shared/lib/pluralize";
 import { Button, Container, PageHeader } from "@/shared/ui";
 
 /** Карточки одной коллекции: /collection/{название} + фильтры по персонажам и сетам. */
-export default function CollectionDetailPage({
-  params,
-}: PageProps<"/collection/[slug]">) {
-  const { slug } = use(params);
+export default function CollectionDetailPage() {
+  const { slug } = useParams<{ slug: string }>();
   const collectionName = decodeURIComponent(slug);
+  const router = useRouter();
 
   const [collection, setCollection] = useState<CollectionWithCards | null>(null);
   const [characters, setCharacters] = useState<Character[]>([]);
@@ -26,6 +27,8 @@ export default function CollectionDetailPage({
   const [setFilter, setSetFilter] = useState<string[]>([]);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -76,6 +79,38 @@ export default function CollectionDetailPage({
     return set?.name;
   };
 
+  async function handleRename(name: string) {
+    if (!collection) return;
+
+    const updated = await fetchJson<Collection>(
+      `/api/collections/${collection.id}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ name }),
+      },
+    );
+    setCollection({ ...collection, name: updated.name });
+    router.replace(`/collection/${encodeURIComponent(updated.name)}`);
+  }
+
+  async function handleDelete() {
+    if (!collection) return;
+
+    setDeleting(true);
+    setError(null);
+
+    try {
+      await fetchJson(`/api/collections/${collection.id}`, { method: "DELETE" });
+      router.push("/collection");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Не удалось удалить коллекцию",
+      );
+      setDeleting(false);
+      setConfirmingDelete(false);
+    }
+  }
+
   if (notFound) {
     return (
       <Container className="flex flex-1 flex-col items-center justify-center gap-4 py-20 text-center">
@@ -99,12 +134,59 @@ export default function CollectionDetailPage({
             : "Карточки выбранной коллекции."
         }
         actions={
-          <Link
-            href="/collection"
-            className="inline-flex h-9 items-center rounded-full border border-line-strong bg-white px-3 text-sm transition-colors hover:border-brand-pink/40 hover:bg-lilac-soft"
-          >
-            ← Все коллекции
-          </Link>
+          collection ? (
+            confirmingDelete ? (
+              <>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => void handleDelete()}
+                  disabled={deleting}
+                >
+                  {deleting ? "Удаляем…" : "Точно удалить?"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setConfirmingDelete(false)}
+                  disabled={deleting}
+                >
+                  Отмена
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/collection"
+                  className="inline-flex h-9 items-center rounded-full border border-line-strong bg-white px-3 text-sm transition-colors hover:border-brand-pink/40 hover:bg-lilac-soft"
+                >
+                  ← Все коллекции
+                </Link>
+                <RenameDialog
+                  title="Переименовать коллекцию"
+                  label="Название коллекции"
+                  placeholder="Например: Редкие"
+                  currentName={collection.name}
+                  hint="Название станет адресом: /collection/Название"
+                  onRename={handleRename}
+                />
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => setConfirmingDelete(true)}
+                >
+                  Удалить
+                </Button>
+              </>
+            )
+          ) : (
+            <Link
+              href="/collection"
+              className="inline-flex h-9 items-center rounded-full border border-line-strong bg-white px-3 text-sm transition-colors hover:border-brand-pink/40 hover:bg-lilac-soft"
+            >
+              ← Все коллекции
+            </Link>
+          )
         }
       />
 

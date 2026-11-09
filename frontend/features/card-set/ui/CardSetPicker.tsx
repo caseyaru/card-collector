@@ -155,9 +155,7 @@ export function CardSetPicker({
             onClick={() => setOpen(true)}
             disabled={Boolean(selected) || Boolean(pendingName)}
             placeholder={
-              selected || pendingName
-                ? ""
-                : "Выберите или введите название"
+              selected || pendingName ? "" : "Выберите или введите сет"
             }
             className="min-w-40 flex-1 bg-transparent px-1 py-1 text-sm text-ink outline-none placeholder:text-faint disabled:cursor-not-allowed"
           />

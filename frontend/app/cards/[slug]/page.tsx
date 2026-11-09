@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { use, useCallback, useEffect, useState, type FormEvent } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { Card } from "@/entities/card";
 import type { Character } from "@/entities/character";
 import type { Collection } from "@/entities/collection";
@@ -14,10 +14,8 @@ import { ApiError, fetchJson } from "@/shared/lib/fetcher";
 import { Button, Container, StarRating, TagMultiSelect, TextField } from "@/shared/ui";
 
 /** Страница карточки: /cards/{название}. Слева изображение, справа информация и действия. */
-export default function CardDetailPage({
-  params,
-}: PageProps<"/cards/[slug]">) {
-  const { slug } = use(params);
+export default function CardDetailPage() {
+  const { slug } = useParams<{ slug: string }>();
   const cardName = decodeURIComponent(slug);
   const router = useRouter();
 

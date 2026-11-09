@@ -1,25 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { use, useCallback, useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CardTile, type Card } from "@/entities/card";
 import type { Character } from "@/entities/character";
-import type { CardSetWithCards } from "@/entities/set";
+import type { CardSet, CardSetWithCards } from "@/entities/set";
 import { CharacterFilter } from "@/features/filter-cards-by-character";
+import { RenameDialog } from "@/features/rename-entity";
 import { fetchJson } from "@/shared/lib/fetcher";
 import { pluralizeCards } from "@/shared/lib/pluralize";
 import { Button, Container, PageHeader } from "@/shared/ui";
 
 /** Карточки одного сета: /sets/{название} + фильтр по персонажам. */
-export default function SetDetailPage({ params }: PageProps<"/sets/[slug]">) {
-  const { slug } = use(params);
+export default function SetDetailPage() {
+  const { slug } = useParams<{ slug: string }>();
   const setName = decodeURIComponent(slug);
+  const router = useRouter();
 
   const [cardSet, setCardSet] = useState<CardSetWithCards | null>(null);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [characterFilter, setCharacterFilter] = useState<string[]>([]);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -57,6 +62,33 @@ export default function SetDetailPage({ params }: PageProps<"/sets/[slug]">) {
       .map((id) => characters.find((character) => character.id === id)?.name)
       .filter((name): name is string => Boolean(name));
 
+  async function handleRename(name: string) {
+    if (!cardSet) return;
+
+    const updated = await fetchJson<CardSet>(`/api/sets/${cardSet.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ name }),
+    });
+    setCardSet({ ...cardSet, name: updated.name });
+    router.replace(`/sets/${encodeURIComponent(updated.name)}`);
+  }
+
+  async function handleDelete() {
+    if (!cardSet) return;
+
+    setDeleting(true);
+    setError(null);
+
+    try {
+      await fetchJson(`/api/sets/${cardSet.id}`, { method: "DELETE" });
+      router.push("/sets");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Не удалось удалить сет");
+      setDeleting(false);
+      setConfirmingDelete(false);
+    }
+  }
+
   if (notFound) {
     return (
       <Container className="flex flex-1 flex-col items-center justify-center gap-4 py-20 text-center">
@@ -80,12 +112,59 @@ export default function SetDetailPage({ params }: PageProps<"/sets/[slug]">) {
             : "Карточки выбранного сета."
         }
         actions={
-          <Link
-            href="/sets"
-            className="inline-flex h-9 items-center rounded-full border border-line-strong bg-white px-3 text-sm transition-colors hover:border-brand-pink/40 hover:bg-lilac-soft"
-          >
-            ← Все сеты
-          </Link>
+          cardSet ? (
+            confirmingDelete ? (
+              <>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => void handleDelete()}
+                  disabled={deleting}
+                >
+                  {deleting ? "Удаляем…" : "Точно удалить?"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setConfirmingDelete(false)}
+                  disabled={deleting}
+                >
+                  Отмена
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/sets"
+                  className="inline-flex h-9 items-center rounded-full border border-line-strong bg-white px-3 text-sm transition-colors hover:border-brand-pink/40 hover:bg-lilac-soft"
+                >
+                  ← Все сеты
+                </Link>
+                <RenameDialog
+                  title="Переименовать сет"
+                  label="Название сета"
+                  placeholder="Например: Пламя и лёд"
+                  currentName={cardSet.name}
+                  hint="Название станет адресом: /sets/Название"
+                  onRename={handleRename}
+                />
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => setConfirmingDelete(true)}
+                >
+                  Удалить
+                </Button>
+              </>
+            )
+          ) : (
+            <Link
+              href="/sets"
+              className="inline-flex h-9 items-center rounded-full border border-line-strong bg-white px-3 text-sm transition-colors hover:border-brand-pink/40 hover:bg-lilac-soft"
+            >
+              ← Все сеты
+            </Link>
+          )
         }
       />
 
