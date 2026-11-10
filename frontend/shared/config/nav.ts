@@ -18,6 +18,11 @@ export const mainNav: NavItem[] = [
     description: "Наборы, к которым относятся карточки",
   },
   {
+    href: "/characters",
+    label: "Персонажи",
+    description: "Герои, которые прикрепляются к карточкам",
+  },
+  {
     href: "/cards",
     label: "Карточки",
     description: "Общий список всех карточек",

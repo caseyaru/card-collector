@@ -1,1 +1,5 @@
-export type { Character, CharacterWithStats } from "./model/types";
+export type {
+  Character,
+  CharacterWithCards,
+  CharacterWithStats,
+} from "./model/types";

@@ -84,6 +84,11 @@ function resolveCharacters(
     return { error: "Имя персонажа слишком длинное" };
   }
 
+  const withSlash = names.find((name) => name.includes("/"));
+  if (withSlash) {
+    return { error: "Имя персонажа не может содержать символ «/»" };
+  }
+
   const ids = [...new Set(requestedIds)];
   for (const name of names) {
     const lower = name.toLowerCase();
