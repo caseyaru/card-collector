@@ -5,4 +5,5 @@ export { PageHeader } from "./PageHeader";
 export { StarRating } from "./StarRating";
 export { TagMultiSelect } from "./TagMultiSelect";
 export type { TagMultiSelectOption } from "./TagMultiSelect";
+export { TextArea } from "./TextArea";
 export { TextField } from "./TextField";

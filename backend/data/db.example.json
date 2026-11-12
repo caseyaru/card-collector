@@ -16,15 +16,21 @@
   "characters": [
     {
       "id": "char_ember",
-      "name": "Эмбера"
+      "name": "Эмбера",
+      "imageUrl": "https://picsum.photos/seed/ember/400/500",
+      "description": "Огненная волшебница, хранительница древнего пламени. Появляется в карточках сета «Пламя и лёд»."
     },
     {
       "id": "char_frost",
-      "name": "Крион"
+      "name": "Крион",
+      "imageUrl": "https://picsum.photos/seed/frost/400/500",
+      "description": "Ледяной страж севера. Спокоен, немногословен и не любит жару."
     },
     {
       "id": "char_moss",
-      "name": "Мшистый дух"
+      "name": "Мшистый дух",
+      "imageUrl": "https://picsum.photos/seed/moss/400/500",
+      "description": "Хранитель лесных троп. Появляется там, где давно не ступала нога человека."
     }
   ],
   "sets": [

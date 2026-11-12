@@ -23,6 +23,10 @@ export interface Collection {
 export interface Character {
   id: string;
   name: string;
+  /** Ссылка на фото персонажа (необязательно). */
+  imageUrl?: string;
+  /** Дополнительная информация о персонаже (необязательно). */
+  description?: string;
 }
 
 /** Сет (сущность из справочника; у карточки может быть не более одного). */

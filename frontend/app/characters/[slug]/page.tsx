@@ -1,51 +1,49 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-import { CardTile, type Card } from "@/entities/card";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { CardPreview } from "@/entities/card";
 import type { Character, CharacterWithCards } from "@/entities/character";
-import type { Collection } from "@/entities/collection";
-import type { CardSet } from "@/entities/set";
-import { RenameDialog } from "@/features/rename-entity";
-import { fetchJson } from "@/shared/lib/fetcher";
+import { ApiError, fetchJson } from "@/shared/lib/fetcher";
 import { pluralizeCards } from "@/shared/lib/pluralize";
-import { Button, Container, PageHeader } from "@/shared/ui";
+import { Button, Container, TextArea, TextField } from "@/shared/ui";
 
-/** Карточки одного персонажа: /characters/{имя}. */
+/** Страница персонажа: /characters/{имя}. */
 export default function CharacterDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const characterName = decodeURIComponent(slug);
   const router = useRouter();
 
   const [character, setCharacter] = useState<CharacterWithCards | null>(null);
-  const [characters, setCharacters] = useState<Character[]>([]);
-  const [collections, setCollections] = useState<Collection[]>([]);
-  const [sets, setSets] = useState<CardSet[]>([]);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Режим редактирования.
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  // Ссылка, подтянутая в превью (обновляется при выходе поля из фокуса).
+  const [imagePreview, setImagePreview] = useState("");
+  const [previewFailed, setPreviewFailed] = useState(false);
+  const [description, setDescription] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
   const load = useCallback(async () => {
     try {
-      const [characterData, charactersData, collectionsData, setsData] =
-        await Promise.all([
-          fetchJson<CharacterWithCards>(
-            `/api/characters/${encodeURIComponent(characterName)}`,
-          ),
-          fetchJson<Character[]>("/api/characters"),
-          fetchJson<Collection[]>("/api/collections"),
-          fetchJson<CardSet[]>("/api/sets"),
-        ]);
-      setCharacter(characterData);
-      setCharacters(charactersData);
-      setCollections(collectionsData);
-      setSets(setsData);
+      setCharacter(
+        await fetchJson<CharacterWithCards>(
+          `/api/characters/${encodeURIComponent(characterName)}`,
+        ),
+      );
       setNotFound(false);
       setError(null);
     } catch (err) {
-      if (err instanceof Error && "status" in err && err.status === 404) {
+      if (err instanceof ApiError && err.status === 404) {
         setNotFound(true);
         return;
       }
@@ -59,35 +57,64 @@ export default function CharacterDetailPage() {
     void load();
   }, [load]);
 
-  const characterNames = (card: Card) =>
-    card.characterIds
-      .map((id) => characters.find((item) => item.id === id)?.name)
-      .filter((name): name is string => Boolean(name));
-
-  const collectionNames = (card: Card) =>
-    card.collectionIds
-      .map((id) => collections.find((item) => item.id === id)?.name)
-      .filter((name): name is string => Boolean(name));
-
-  const setNames = (card: Card) => {
-    const set = card.setId
-      ? sets.find((item) => item.id === card.setId)
-      : undefined;
-    return set?.name;
-  };
-
-  async function handleRename(name: string) {
+  function startEdit() {
     if (!character) return;
 
-    const updated = await fetchJson<Character>(
-      `/api/characters/${character.id}`,
-      {
-        method: "PATCH",
-        body: JSON.stringify({ name }),
-      },
-    );
-    setCharacter({ ...character, name: updated.name });
-    router.replace(`/characters/${encodeURIComponent(updated.name)}`);
+    setName(character.name);
+    setImageUrl(character.imageUrl ?? "");
+    setImagePreview(character.imageUrl ?? "");
+    setPreviewFailed(false);
+    setDescription(character.description ?? "");
+    setFormError(null);
+    setEditing(true);
+  }
+
+  function cancelEdit() {
+    setEditing(false);
+    setFormError(null);
+  }
+
+  /** Подтягивает ссылку из поля в превью при потере фокуса. */
+  function commitImagePreview() {
+    setImagePreview(imageUrl.trim());
+    setPreviewFailed(false);
+  }
+
+  async function handleSave(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!character) return;
+
+    setPending(true);
+    setFormError(null);
+
+    try {
+      const updated = await fetchJson<Character>(
+        `/api/characters/${character.id}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ name, imageUrl, description }),
+        },
+      );
+
+      setCharacter({
+        ...character,
+        name: updated.name,
+        imageUrl: updated.imageUrl,
+        description: updated.description,
+      });
+      setEditing(false);
+      setPreviewFailed(false);
+
+      if (updated.name !== characterName) {
+        router.replace(`/characters/${encodeURIComponent(updated.name)}`);
+      }
+    } catch (err) {
+      setFormError(
+        err instanceof Error ? err.message : "Не удалось сохранить персонажа",
+      );
+    } finally {
+      setPending(false);
+    }
   }
 
   async function handleDelete() {
@@ -121,71 +148,21 @@ export default function CharacterDetailPage() {
     );
   }
 
+  const previewSource = editing
+    ? imagePreview
+    : (character?.imageUrl ?? "");
+  // next/image принимает только абсолютный http(s)-адрес; остальное — как «нет фото».
+  const shownImageUrl = /^https?:\/\//i.test(previewSource) ? previewSource : "";
+  const initial = character?.name.trim().charAt(0).toUpperCase() ?? "";
+
   return (
     <Container className="flex flex-1 flex-col gap-8 py-10">
-      <PageHeader
-        title={character ? character.name : "Персонаж"}
-        description={
-          character
-            ? `В карточках этого персонажа: ${pluralizeCards(character.cards.length)}`
-            : "Карточки выбранного персонажа."
-        }
-        actions={
-          character ? (
-            confirmingDelete ? (
-              <>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => void handleDelete()}
-                  disabled={deleting}
-                >
-                  {deleting ? "Удаляем…" : "Точно удалить?"}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setConfirmingDelete(false)}
-                  disabled={deleting}
-                >
-                  Отмена
-                </Button>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/characters"
-                  className="inline-flex h-9 items-center rounded-full border border-line-strong bg-white px-3 text-sm transition-colors hover:border-brand-pink/40 hover:bg-lilac-soft"
-                >
-                  ← Все персонажи
-                </Link>
-                <RenameDialog
-                  title="Переименовать персонажа"
-                  label="Имя персонажа"
-                  placeholder="Например: Эмбера"
-                  currentName={character.name}
-                  hint="Имя станет адресом: /characters/Имя"
-                  onRename={handleRename}
-                />
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => setConfirmingDelete(true)}
-                >
-                  Удалить
-                </Button>
-              </>
-            )
-          ) : (
-            <Link
-              href="/characters"
-              className="inline-flex h-9 items-center rounded-full border border-line-strong bg-white px-3 text-sm transition-colors hover:border-brand-pink/40 hover:bg-lilac-soft"
-            >
-              ← Все персонажи
-            </Link>
-          )
-        }
-      />
+      <Link
+        href="/characters"
+        className="inline-flex h-9 w-fit items-center rounded-full border border-line-strong bg-white px-3 text-sm transition-colors hover:border-brand-pink/40 hover:bg-lilac-soft"
+      >
+        ← Все персонажи
+      </Link>
 
       {error ? (
         <div
@@ -205,31 +182,202 @@ export default function CharacterDetailPage() {
         </p>
       ) : null}
 
-      {character !== null && character.cards.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-line-strong p-10 text-center">
-          <p className="max-w-md text-sm leading-6 text-muted">
-            У этого персонажа пока нет карточек. Добавьте карточку на{" "}
-            <Link href="/cards" className="underline underline-offset-4">
-              странице карточек
-            </Link>{" "}
-            и отметьте этого персонажа в форме.
-          </p>
-        </div>
-      ) : null}
+      {character !== null ? (
+        <>
+          <section className="grid gap-6 rounded-3xl border border-line bg-white p-5 shadow-sm md:grid-cols-[minmax(0,240px)_1fr] md:p-8">
+            {/* Фото персонажа: в режиме редактирования показывает превью ссылки. */}
+            <div className="relative aspect-[4/5] w-full max-w-[280px] overflow-hidden rounded-2xl border border-line bg-lilac-soft md:max-w-none">
+              {shownImageUrl && !previewFailed ? (
+                <Image
+                  src={shownImageUrl}
+                  alt={character.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 280px"
+                  className="object-cover"
+                  onError={() => setPreviewFailed(true)}
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center px-4 text-center">
+                  {editing && imagePreview ? (
+                    <span className="text-sm text-faint">
+                      Не удалось загрузить фото
+                    </span>
+                  ) : initial ? (
+                    <span className="text-6xl font-semibold text-brand-pink-deep/40">
+                      {initial}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-faint">Нет фото</span>
+                  )}
+                </div>
+              )}
+            </div>
 
-      {character !== null && character.cards.length > 0 ? (
-        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {character.cards.map((card) => (
-            <li key={card.id}>
-              <CardTile
-                card={card}
-                badges={collectionNames(card)}
-                characterBadges={characterNames(card)}
-                setBadge={setNames(card)}
-              />
-            </li>
-          ))}
-        </ul>
+            {editing ? (
+              <form
+                onSubmit={handleSave}
+                onKeyDown={(event) => {
+                  // Enter в полях не должен отправлять форму: сохранение — только кнопкой.
+                  if (
+                    event.key === "Enter" &&
+                    event.target instanceof HTMLInputElement
+                  ) {
+                    event.preventDefault();
+                  }
+                }}
+                className="flex flex-col gap-4"
+              >
+                <h1 className="text-3xl font-semibold leading-tight">
+                  Редактирование
+                </h1>
+
+                <TextField
+                  label="Имя персонажа"
+                  placeholder="Например: Эмбера"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  required
+                  autoFocus
+                  hint="Имя станет адресом: /characters/Имя"
+                />
+
+                <TextField
+                  label="Ссылка на фото"
+                  type="url"
+                  inputMode="url"
+                  placeholder="https://example.com/photo.jpg"
+                  value={imageUrl}
+                  onChange={(event) => setImageUrl(event.target.value)}
+                  onBlur={commitImagePreview}
+                  hint="Необязательно. Если ссылки нет, покажем первую букву имени."
+                />
+
+                <TextArea
+                  label="Дополнительная информация"
+                  placeholder="Расскажите о персонаже: характер, история, способности…"
+                  value={description}
+                  onChange={(event) => setDescription(event.target.value)}
+                  maxLength={1000}
+                  hint="Необязательно. До 1000 символов."
+                />
+
+                {formError ? (
+                  <p role="alert" className="text-sm text-red-600">
+                    {formError}
+                  </p>
+                ) : null}
+
+                <div className="mt-2 flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={cancelEdit}
+                    disabled={pending}
+                  >
+                    Отмена
+                  </Button>
+                  <Button type="submit" size="sm" disabled={pending || !name.trim()}>
+                    {pending ? "Сохраняем…" : "Сохранить"}
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <div className="flex flex-col gap-5">
+                <div className="flex flex-col gap-2">
+                  <h1 className="text-3xl font-semibold leading-tight">
+                    {character.name}
+                  </h1>
+                  <p className="text-sm text-muted">
+                    {pluralizeCards(character.cards.length)} с этим персонажем
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <h2 className="text-sm font-medium text-muted">
+                    Дополнительная информация
+                  </h2>
+                  {character.description ? (
+                    <p className="max-w-2xl whitespace-pre-line text-sm leading-7 text-ink-soft">
+                      {character.description}
+                    </p>
+                  ) : (
+                    <p className="max-w-2xl text-sm leading-6 text-muted">
+                      Пока нет дополнительной информации. Нажмите «Редактировать»,
+                      чтобы добавить описание.
+                    </p>
+                  )}
+                </div>
+
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Button variant="secondary" size="sm" onClick={startEdit}>
+                    Редактировать
+                  </Button>
+
+                  {confirmingDelete ? (
+                    <>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => void handleDelete()}
+                        disabled={deleting}
+                      >
+                        {deleting ? "Удаляем…" : "Точно удалить?"}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setConfirmingDelete(false)}
+                        disabled={deleting}
+                      >
+                        Отмена
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => setConfirmingDelete(true)}
+                    >
+                      Удалить
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </section>
+
+          <section className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-xl font-semibold">Карточки с персонажем</h2>
+              <p className="text-sm text-muted">
+                {character.cards.length > 0
+                  ? "Нажмите на превью, чтобы открыть карточку."
+                  : "Список появится, когда к персонажу прикрепят карточки."}
+              </p>
+            </div>
+
+            {character.cards.length === 0 ? (
+              <div className="flex items-center justify-center rounded-2xl border border-dashed border-line-strong p-10 text-center">
+                <p className="max-w-md text-sm leading-6 text-muted">
+                  У этого персонажа пока нет карточек. Добавьте карточку на{" "}
+                  <Link href="/cards" className="underline underline-offset-4">
+                    странице карточек
+                  </Link>{" "}
+                  и отметьте этого персонажа в форме.
+                </p>
+              </div>
+            ) : (
+              <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+                {character.cards.map((card) => (
+                  <li key={card.id}>
+                    <CardPreview card={card} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </>
       ) : null}
     </Container>
   );

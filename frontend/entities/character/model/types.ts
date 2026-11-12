@@ -4,6 +4,10 @@ import type { Card } from "@/entities/card";
 export interface Character {
   id: string;
   name: string;
+  /** Ссылка на фото персонажа (необязательно). */
+  imageUrl?: string;
+  /** Дополнительная информация о персонаже (необязательно). */
+  description?: string;
 }
 
 /** Персонаж с количеством карточек (ответ GET /api/characters). */
